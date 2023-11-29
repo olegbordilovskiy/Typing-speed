@@ -5,11 +5,12 @@
 class Typing
 {
 public:
-	Typing(const char* wordsSource);
-	void ChangeState(wchar_t symbol);
+	Typing(const char* textSource);
+	void ChangeState(char letter);
 private:
 	std::vector<Letter> letters;
 	int currentInd;
 	int wordsAmount;
+	void ResourceLoading(const char* textSource);
 };
 

@@ -2,18 +2,18 @@
 class Letter
 {
 public:
-	Letter(wchar_t letter) {
+	Letter(char letter) {
 		this->letter = letter;
 		this->isCorrect = true;
 	}
-	wchar_t GetLetter() {
+	char GetLetter() {
 		return this->letter;
 	}
 	bool GetIsCorrect() {
 		return this->isCorrect;
 	}
 private:
-	wchar_t letter;
+	char letter;
 	bool isCorrect;
 };
 

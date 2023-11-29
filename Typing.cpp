@@ -2,18 +2,36 @@
 #include <fstream>
 #include <string>
 
-Typing::Typing(const char* wordsSource)
+Typing::Typing(const char* textSource)
 {
-	std::ifstream wordsFile(wordsSource);
+	ResourceLoading(textSource);
+}
+
+void Typing::ChangeState(char letter)
+{
+
+}
+
+void Typing::ResourceLoading(const char* textSource)
+{
+	std::ifstream wordsFile(textSource);
 	if (!(wordsFile.is_open()))
 	{
 		return;
 	}
-}
-
-void Typing::ChangeState(wchar_t symbol)
-{
-
+	char letterSymbol;
+	while (wordsFile.get(letterSymbol)) {
+		if (letterSymbol != '\n') 
+		{
+			Letter letter(letterSymbol);
+			letters.push_back(letter);
+		}
+		else 
+		{
+			Letter letter(' ');
+			letters.push_back(letter);
+		}
+	}
 }
 
 
