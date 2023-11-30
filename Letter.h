@@ -2,16 +2,10 @@
 class Letter
 {
 public:
-	Letter(char letter) {
-		this->letter = letter;
-		this->isCorrect = true;
-	}
-	char GetLetter() {
-		return this->letter;
-	}
-	bool GetIsCorrect() {
-		return this->isCorrect;
-	}
+	Letter(char letter);
+	char GetLetter();
+	void SetIsCorrect(bool isCorrect);
+	bool GetIsCorrect();
 private:
 	char letter;
 	bool isCorrect;

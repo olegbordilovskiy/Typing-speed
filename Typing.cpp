@@ -1,6 +1,5 @@
 #include "Typing.h"
-#include <fstream>
-#include <string>
+
 
 Typing::Typing(const char* textSource)
 {
@@ -9,18 +8,34 @@ Typing::Typing(const char* textSource)
 
 void Typing::ChangeState(char letter)
 {
+	if (letter == '0x08')
+	{
+		currentInd--;
+		return;
+	}
+	if (letter != letters[currentInd].GetLetter())
+	{
+		letters[currentInd].SetIsCorrect(false);
+		return;
+	}
+	currentInd++;
+}
 
+std::vector<Letter> Typing::GetLetters()
+{
+	return std::vector<Letter>();
 }
 
 void Typing::ResourceLoading(const char* textSource)
 {
-	std::ifstream wordsFile(textSource);
-	if (!(wordsFile.is_open()))
+	std::ifstream textFile(textSource);
+	if (!(textFile.is_open()))
 	{
 		return;
 	}
+
 	char letterSymbol;
-	while (wordsFile.get(letterSymbol)) {
+	while (textFile.get(letterSymbol)) {
 		if (letterSymbol != '\n') 
 		{
 			Letter letter(letterSymbol);

@@ -133,11 +133,13 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Typing speed.h" />
     <ClInclude Include="Typing.h" />
+    <ClInclude Include="View.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Letter.cpp" />
     <ClCompile Include="Typing speed.cpp" />
     <ClCompile Include="Typing.cpp" />
+    <ClCompile Include="View.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Typing speed.rc" />

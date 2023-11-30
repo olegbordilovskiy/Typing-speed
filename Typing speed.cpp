@@ -20,12 +20,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 PAINTSTRUCT ps;
 RECT clientRect;
 RECT textRect;
-vector<string> words;
-vector <string> currentWords;
+//vector<string> words;
+//vector <string> currentWords;
 HFONT font;
 int currentTextPosition;
 random_device random;
 mt19937 g(random());
+const char* path = "C:\\Users\\vanas\\OneDrive\\Рабочий стол\\3 курс\\СП\\Typing speed\\resources\\words.txt";
 
 //BYTE ResourceLoading() {
 //	ifstream wordsFile("resources\\words.txt");
@@ -52,45 +53,42 @@ mt19937 g(random());
 //	wcscpy_s(lf.lfFaceName, L"Tahoma"); // Имя шрифта
 //	font = CreateFontIndirect(&lf); // Создание шрифта
 //}
-
-void FontResize(HFONT& font, RECT drawingArea)
-{
-	/*WORD size = 0;
-	WORD fontSize = 0;
-
-	if (drawingArea.bottom - drawingArea.top > drawingArea.right - drawingArea.left)
-	{
-		size = (drawingArea.bottom - drawingArea.top) / 3;
-		fontSize = size % 72;
-	}
-	else
-	{
-		size = drawingArea.right - drawingArea.left;
-		fontSize = size % 36;
-	}*/
-
-	//WORD totalSize = drawingArea.bottom - drawingArea.top;
-	//WORD rowHeight = totalSize / 3;
-	//WORD fontSize = rowHeight % 72;
-	//LOGFONT lf;
-	//memset(&lf, 0, sizeof(LOGFONT)); // Инициализация
-	//lf.lfHeight = fontSize; // Размер шрифта
-	//lf.lfWeight = FW_NORMAL; // Вес шрифта
-	//lf.lfItalic = FALSE; // Курсив
-	//lf.lfUnderline = FALSE; // Подчеркивание
-	//lf.lfCharSet = DEFAULT_CHARSET; // Набор символов
-	//wcscpy_s(lf.lfFaceName, L"Tahoma"); // Имя шрифта
-	//font = CreateFontIndirect(&lf); // Создание шрифта
-
-}
-
+//void FontResize(HFONT& font, RECT drawingArea)
+//{
+//	WORD size = 0;
+//	WORD fontSize = 0;
+//
+//	if (drawingArea.bottom - drawingArea.top > drawingArea.right - drawingArea.left)
+//	{
+//		size = (drawingArea.bottom - drawingArea.top) / 3;
+//		fontSize = size % 72;
+//	}
+//	else
+//	{
+//		size = drawingArea.right - drawingArea.left;
+//		fontSize = size % 36;
+//	}
+//
+//	WORD totalSize = drawingArea.bottom - drawingArea.top;
+//	WORD rowHeight = totalSize / 3;
+//	WORD fontSize = rowHeight % 72;
+//	LOGFONT lf;
+//	memset(&lf, 0, sizeof(LOGFONT)); // Инициализация
+//	lf.lfHeight = fontSize; // Размер шрифта
+//	lf.lfWeight = FW_NORMAL; // Вес шрифта
+//	lf.lfItalic = FALSE; // Курсив
+//	lf.lfUnderline = FALSE; // Подчеркивание
+//	lf.lfCharSet = DEFAULT_CHARSET; // Набор символов
+//	wcscpy_s(lf.lfFaceName, L"Tahoma"); // Имя шрифта
+//	font = CreateFontIndirect(&lf); // Создание шрифта
+//
+//}
 //wchar_t* ConvertToWideString(const string& input) {
 //	wstring wideString(input.begin(), input.end());
 //	wchar_t* wideStringCopy = new wchar_t[wideString.length() + 1]; // +1 для нулевого символа
 //	wcscpy_s(wideStringCopy, wideString.length() + 1, wideString.c_str());
 //	return wideStringCopy;
 //}
-
 //BYTE HowManyWordsCanBeContained(HDC hdc, long distance, HFONT font, const vector<string>& words) {
 //	BYTE wordsContained = 0;
 //	SIZE wordSize;
@@ -124,8 +122,6 @@ void FontResize(HFONT& font, RECT drawingArea)
 //	return wordsContained;
 //}
 //
-
-
 //wchar_t* ExtractWords(BYTE amount, const vector<string>& words, int index) {
 //	wstring result;
 //	BYTE wordsToExtract = amount;/* = min(amount, words.size());*/ // Учитываем, что может быть меньше слов, чем запрошено
@@ -158,9 +154,6 @@ void FontResize(HFONT& font, RECT drawingArea)
 //
 //	return newTextRect;
 //}
-
-
-
 //void DrawTestingWords(HDC hdc, HFONT font, RECT drawingArea, vector<string>& words) {
 //	BYTE rowsCount = 3;
 //	WORD rowsHeight = (drawingArea.bottom - drawingArea.top) / rowsCount;
@@ -237,7 +230,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	ShowWindow(hwnd, SW_MAXIMIZE);
 	//ShowWindow(hwnd, nCmdShow);
 
-	Typing* typ = new Typing("C:\\Users\\vanas\\OneDrive\\Рабочий стол\\3 курс\\СП\\Typing speed\\resources\\words.txt");
+	Typing* typ = new Typing(path);
 
 
 	MSG msg = { };
@@ -274,7 +267,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		GetClientRect(hwnd, &clientRect);
 		//textRect = GetNewTextRect();
-		FontResize(font, textRect);
+		//FontResize(font, textRect);
 		InvalidateRect(hwnd, NULL, TRUE);
 		return 0;
 	}
