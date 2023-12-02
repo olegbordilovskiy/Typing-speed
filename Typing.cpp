@@ -8,7 +8,7 @@ Typing::Typing()
 
 void Typing::ChangeState(char letter)
 {
-	if (letter == '0x08')
+	if (letter == '\b')
 	{
 		currentInd--;
 		return;

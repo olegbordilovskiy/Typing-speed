@@ -13,7 +13,8 @@
 #include <algorithm>
 #include <random>
 #include "Typing.h"
-#include"View.h"
+#include "View.h"
+#include <cctype>
 
 using namespace std;
 
@@ -283,7 +284,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	case WM_KEYDOWN:
 	{
-		
+		char lowerCase = tolower(wParam);
+		//char lowerCase = wParam;
+		typ->ChangeState(lowerCase);
 	}
 
 	case WM_SIZE:

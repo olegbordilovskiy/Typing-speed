@@ -8,7 +8,7 @@ View::View(Typing* typing)
 	startPosition = 0;
 	currentPosition = 0;
 	endPosition = 0;
-	rowCount = 3;	
+	rowCount = 3;
 }
 
 void View::Update(HDC hdc, RECT clientRect)
@@ -17,6 +17,7 @@ void View::Update(HDC hdc, RECT clientRect)
 	//HFONT oldFont = (HFONT)SelectObject(hdc, font);
 
 	GetLetterWidth(hdc);
+	DrawCurrentPosition(hdc)
 	DrawLetters(hdc, textRect);
 
 
@@ -34,7 +35,7 @@ int View::HowManyLettersCanBeContained(RECT textRect, int startLetterIndex)
 	int lettersAmount = 0;
 	int totalLettersAmount = 0;
 	int position = startLetterIndex;
-	 
+
 	while (availableDistance > 0)
 	{
 		if (availableDistance - GetWordSize(position) < 0) break;
@@ -94,10 +95,41 @@ RECT View::GetNewTextRect(RECT clientRect)
 	return newTextRect;
 }
 
+std::wstring View::CharToPWChar(char ch)
+{
+	wchar_t wideChar;
+	MultiByteToWideChar(CP_UTF8, 0, &ch, 1, &wideChar, 1);
+	return std::wstring(1, wideChar);
+}
+
 void View::DrawLetters(HDC hdc, RECT textRect)
 {
 	int rowsHeight = (textRect.bottom - textRect.top) / rowCount;
-	int a = HowManyLettersCanBeContained(textRect,0);
+	int position = currentPosition;
+	std::vector<Letter> letters = typing->GetLetters();
+	SetBkColor(hdc, RGB(0, 0, 0));
+
+	for (int row = 0; row < rowCount; row++)
+	{
+		int lettersCount = HowManyLettersCanBeContained(textRect, position);
+		position += lettersCount;
+
+		for (int i = 0; i < lettersCount; i++)
+		{
+
+			if (!letters[i].GetIsCorrect())
+			{
+				SetTextColor(hdc, RGB(255, 0, 0));
+			}
+			else
+			{
+				SetTextColor(hdc, RGB(255, 255, 255));
+			}
+			TextOut(hdc, textRect.left + i * letterWidth, textRect.top + row * rowsHeight,
+				CharToPWChar(letters[i].GetLetter()).c_str(), 1);
+		}
+	}
+	//int a = HowManyLettersCanBeContained(textRect,0);
 
 	//SIZE fontHeight;
 	//SetTextColor(hdc, RGB(255, 255, 255));
@@ -129,7 +161,7 @@ void View::GetLetterWidth(HDC hdc)
 	SelectObject(hdc, font);
 	SIZE letterSize;
 	GetTextExtentPoint32(hdc, L"w", 1, &letterSize);
-	letterWidth = letterSize.cx; 
+	letterWidth = letterSize.cx;
 }
 
 void View::DefineNewBoundaries(HDC hdc)
@@ -137,4 +169,18 @@ void View::DefineNewBoundaries(HDC hdc)
 	if (typing->GetCurrentInd() > endPosition) {
 
 	}
+}
+
+void View::DrawCurrentPosition(HDC hdc)
+{
+
+	HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 255));  
+	HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, hBrush);
+
+	SelectObject(hdc, hOldBrush);
+
+	//Rectangle(hdc);
+
+	DeleteObject(hBrush);
+
 }
