@@ -1,9 +1,9 @@
 #include "Typing.h"
 
 
-Typing::Typing(const char* textSource)
+Typing::Typing()
 {
-	ResourceLoading(textSource);
+	ResourceLoading();
 }
 
 void Typing::ChangeState(char letter)
@@ -21,13 +21,19 @@ void Typing::ChangeState(char letter)
 	currentInd++;
 }
 
-std::vector<Letter> Typing::GetLetters()
+int Typing::GetCurrentInd()
 {
-	return std::vector<Letter>();
+	return currentInd;
 }
 
-void Typing::ResourceLoading(const char* textSource)
+std::vector<Letter> Typing::GetLetters()
 {
+	return letters;
+}
+
+void Typing::ResourceLoading()
+{
+	const char* textSource = "C:\\Users\\vanas\\OneDrive\\Рабочий стол\\3 курс\\СП\\Typing speed\\resources\\words.txt";
 	std::ifstream textFile(textSource);
 	if (!(textFile.is_open()))
 	{

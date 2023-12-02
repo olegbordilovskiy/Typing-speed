@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <random>
 #include "Typing.h"
+#include"View.h"
 
 using namespace std;
 
@@ -26,7 +27,23 @@ HFONT font;
 int currentTextPosition;
 random_device random;
 mt19937 g(random());
-const char* path = "C:\\Users\\vanas\\OneDrive\\Рабочий стол\\3 курс\\СП\\Typing speed\\resources\\words.txt";
+//View view;
+
+Typing* typ = new Typing();
+View view(typ);
+
+RECT GetNewTextRect(RECT clientRect)
+{
+	RECT newTextRect;
+	float coefX = 1.2;
+	float coefY = 1.6;
+	newTextRect.left = clientRect.right - clientRect.right / coefX;
+	newTextRect.top = clientRect.bottom - clientRect.bottom / coefY;
+	newTextRect.right = clientRect.right / coefX;
+	newTextRect.bottom = clientRect.bottom / coefY;
+	return newTextRect;
+}
+
 
 //BYTE ResourceLoading() {
 //	ifstream wordsFile("resources\\words.txt");
@@ -184,13 +201,13 @@ const char* path = "C:\\Users\\vanas\\OneDrive\\Рабочий стол\\3 ку�
 //	SelectObject(hdc, oldFont);
 //}
 //
-//void DrawRectangle(HDC hdc)
-//{
-//	HBRUSH brush = CreateSolidBrush(RGB(50, 50, 50));
-//	SelectObject(hdc, brush);
-//	Rectangle(hdc, textRect.left, textRect.top, textRect.right, textRect.bottom);
-//	DeleteObject(brush);
-//}
+void DrawRectangle(HDC hdc)
+{
+	HBRUSH brush = CreateSolidBrush(RGB(50, 50, 50));
+	SelectObject(hdc, brush);
+	Rectangle(hdc, textRect.left, textRect.top, textRect.right, textRect.bottom);
+	DeleteObject(brush);
+}
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
@@ -230,7 +247,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	ShowWindow(hwnd, SW_MAXIMIZE);
 	//ShowWindow(hwnd, nCmdShow);
 
-	Typing* typ = new Typing(path);
+	
+	
+	
 
 
 	MSG msg = { };
@@ -251,8 +270,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		HDC hdc = BeginPaint(hwnd, &ps);
 		FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 5));
-		//DrawRectangle(hdc);
+		DrawRectangle(hdc);
 		//DrawTestingWords(hdc, font, textRect, words);
+
+		view.Update(hdc, clientRect);
+
+		//view.Update(hdc, clientRect);
 		EndPaint(hwnd, &ps);
 
 	}
@@ -266,7 +289,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_SIZE:
 	{
 		GetClientRect(hwnd, &clientRect);
-		//textRect = GetNewTextRect();
+		textRect = GetNewTextRect(clientRect);
 		//FontResize(font, textRect);
 		InvalidateRect(hwnd, NULL, TRUE);
 		return 0;

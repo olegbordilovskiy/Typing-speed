@@ -5,16 +5,25 @@
 class View
 {
 private:
-	int HowManyWordsCanBeContained(HDC hdc);
+	int HowManyLettersCanBeContained(RECT textRect, int startLetterIndex);
+	int GetWordSize(int position);
 	void FontLoading();
+	void DrawLetters(HDC hdc, RECT clientRect);
+	void GetLetterWidth(HDC hdc);
+	void DefineNewBoundaries(HDC hdc);
 	RECT GetNewTextRect(RECT clientRect);
-public:
-	View(Typing* typing);
-	void Update(HDC hdc, RECT clientRect);
 
+	int startPosition;
+	int currentPosition;
+	int endPosition;
+	int letterWidth;
+	int rowCount;
 	Typing* typing;
 	HFONT font;
 	RECT clientRect;
-	HWND hwnd;
+
+public:
+	View(Typing* typing);
+	void Update(HDC hdc, RECT clientRect);
 };
 
