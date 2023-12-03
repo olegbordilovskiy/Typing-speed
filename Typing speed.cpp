@@ -46,31 +46,9 @@ RECT GetNewTextRect(RECT clientRect)
 }
 
 
-//BYTE ResourceLoading() {
-//	ifstream wordsFile("resources\\words.txt");
-//	if (!(wordsFile.is_open()))
-//	{
-//		return 1;
-//	}
-//
-//	string word;
-//	while (wordsFile >> word)
-//	{
-//		words.push_back(word);
-//	}
-//
+
 //	shuffle(words.begin(), words.end(), g);
-//
-//	LOGFONT lf;
-//	memset(&lf, 0, sizeof(LOGFONT)); // Инициализация
-//	lf.lfHeight = 45; // Размер шрифта
-//	lf.lfWeight = FW_NORMAL; // Вес шрифта
-//	lf.lfItalic = FALSE; // Курсив
-//	lf.lfUnderline = FALSE; // Подчеркивание
-//	lf.lfCharSet = DEFAULT_CHARSET; // Набор символов
-//	wcscpy_s(lf.lfFaceName, L"Tahoma"); // Имя шрифта
-//	font = CreateFontIndirect(&lf); // Создание шрифта
-//}
+
 //void FontResize(HFONT& font, RECT drawingArea)
 //{
 //	WORD size = 0;
@@ -100,108 +78,7 @@ RECT GetNewTextRect(RECT clientRect)
 //	wcscpy_s(lf.lfFaceName, L"Tahoma"); // Имя шрифта
 //	font = CreateFontIndirect(&lf); // Создание шрифта
 //
-//}
-//wchar_t* ConvertToWideString(const string& input) {
-//	wstring wideString(input.begin(), input.end());
-//	wchar_t* wideStringCopy = new wchar_t[wideString.length() + 1]; // +1 для нулевого символа
-//	wcscpy_s(wideStringCopy, wideString.length() + 1, wideString.c_str());
-//	return wideStringCopy;
-//}
-//BYTE HowManyWordsCanBeContained(HDC hdc, long distance, HFONT font, const vector<string>& words) {
-//	BYTE wordsContained = 0;
-//	SIZE wordSize;
-//	SIZE spaceSize;
-//	SIZE totalSize;
-//	int charSize;
-//	GetTextExtentPoint32(hdc, L" ", 1, &spaceSize);
-//	//GetTextExtentPoint32(hdc, L"i", 1, &spaceSize);
-//	//GetTextExtentPoint32(hdc, L"w", 1, &spaceSize);
-//
-//	for (const string& word : words) {
-//
-//		// Преобразуем строку в wchar_t*
-//		wchar_t* wideWord = ConvertToWideString(word);
-//
-//		GetTextExtentPoint32(hdc, wideWord, wcslen(wideWord), &wordSize);
-//
-//		totalSize.cx = wordSize.cx + spaceSize.cx;
-//
-//		delete[] wideWord; // Не забудьте освободить память
-//
-//		if (totalSize.cx <= distance) {
-//			distance -= totalSize.cx;
-//			wordsContained++;
-//		}
-//		else {
-//			break; // Не помещаются больше слов
-//		}
-//	}
-//
-//	return wordsContained;
-//}
-//
-//wchar_t* ExtractWords(BYTE amount, const vector<string>& words, int index) {
-//	wstring result;
-//	BYTE wordsToExtract = amount;/* = min(amount, words.size());*/ // Учитываем, что может быть меньше слов, чем запрошено
-//
-//	for (BYTE i = 0; i < wordsToExtract; ++i) {
-//		result += wstring(words[index + i].begin(), words[index + i].end());
-//		if (i < wordsToExtract - 1) {
-//			result += L' '; // Добавляем пробел между словами, кроме последнего
-//		}
-//	}
-//
-//	// Выделяем память для широкой строки и копируем в нее результат
-//	wchar_t* wideResult = new wchar_t[result.length() + 1]; // +1 для нулевого символа
-//	wcscpy_s(wideResult, result.length() + 1, result.c_str());
-//
-//
-//	return wideResult;
-//}
-//
-//
-//RECT GetNewTextRect()
-//{
-//	RECT newTextRect;
-//	float coefX = 1.2;
-//	float coefY = 1.75;
-//	newTextRect.left = clientRect.right - clientRect.right / coefX;
-//	newTextRect.top = clientRect.bottom - clientRect.bottom / coefY;
-//	newTextRect.right = clientRect.right / coefX;
-//	newTextRect.bottom = clientRect.bottom / coefY;
-//
-//	return newTextRect;
-//}
-//void DrawTestingWords(HDC hdc, HFONT font, RECT drawingArea, vector<string>& words) {
-//	BYTE rowsCount = 3;
-//	WORD rowsHeight = (drawingArea.bottom - drawingArea.top) / rowsCount;
-//	HFONT oldFont = (HFONT)SelectObject(hdc, font);
-//	SIZE fontHeight;
-//	SetTextColor(hdc, RGB(255, 255, 255));
-//	SetBkColor(hdc, RGB(0, 0, 0));
-//	GetTextExtentPoint32(hdc, L"s", 1, &fontHeight);
-//	long y = drawingArea.top;
-//	int wordIndex = 0;
-//
-//	for (BYTE i = 0; i < rowsCount; i++) {
-//
-//		BYTE wordsAmount = HowManyWordsCanBeContained(hdc, drawingArea.right - drawingArea.left, font, words);
-//		wordIndex += wordsAmount;
-//		wchar_t* TextRow = ExtractWords(wordsAmount, words, wordIndex);
-//
-//		TextOut(hdc, drawingArea.left, y, TextRow, lstrlen(TextRow));
-//		y += rowsHeight;
-//
-//		// Освобождаем выделенную память после использования
-//		//words.erase(words.begin(), words.begin() + wordsAmount);
-//		delete[] TextRow;
-//
-//	}
-//
-//	// Восстанавливаем предыдущий шрифт
-//	SelectObject(hdc, oldFont);
-//}
-//
+
 void DrawRectangle(HDC hdc)
 {
 	HBRUSH brush = CreateSolidBrush(RGB(50, 50, 50));
@@ -271,7 +148,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		HDC hdc = BeginPaint(hwnd, &ps);
 		FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 5));
-		DrawRectangle(hdc);
+		//DrawRectangle(hdc);
 		//DrawTestingWords(hdc, font, textRect, words);
 
 		view.Update(hdc, clientRect);
@@ -287,6 +164,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		char lowerCase = tolower(wParam);
 		//char lowerCase = wParam;
 		typ->ChangeState(lowerCase);
+		
+		InvalidateRect(hwnd, NULL, TRUE);
 	}
 
 	case WM_SIZE:

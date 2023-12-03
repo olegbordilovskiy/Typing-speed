@@ -11,14 +11,22 @@ void Typing::ChangeState(char letter)
 	if (letter == '\b')
 	{
 		currentInd--;
+		if (currentInd < 0) currentInd = 0;
 		return;
 	}
 	if (letter != letters[currentInd].GetLetter())
 	{
 		letters[currentInd].SetIsCorrect(false);
+		currentInd++;
 		return;
 	}
-	currentInd++;
+	else
+	{
+		letters[currentInd].SetIsCorrect(true);
+		currentInd++;
+		return;
+	}
+	//currentInd++;
 }
 
 int Typing::GetCurrentInd()

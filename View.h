@@ -12,15 +12,16 @@ private:
 	void FontLoading();
 	void DrawLetters(HDC hdc, RECT clientRect);
 	void GetLetterWidth(HDC hdc);
+	//void GetLetterHeight(HDC hdc);
 	void DefineNewBoundaries(HDC hdc);
-	void DrawCurrentPosition(HDC hdc);
 	RECT GetNewTextRect(RECT clientRect);
-	std::wstring CharToPWChar(char ch);
+	std::wstring CharToWstring(char ch);
 
 	int startPosition;
 	int currentPosition;
 	int endPosition;
 	int letterWidth;
+	//int letterHeight;
 	int rowCount;
 	Typing* typing;
 	HFONT font;

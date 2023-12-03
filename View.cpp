@@ -17,11 +17,8 @@ void View::Update(HDC hdc, RECT clientRect)
 	//HFONT oldFont = (HFONT)SelectObject(hdc, font);
 
 	GetLetterWidth(hdc);
-	DrawCurrentPosition(hdc)
+	//DrawCurrentPosition(hdc);
 	DrawLetters(hdc, textRect);
-
-
-
 
 	//SelectObject(hdc, oldFont);
 }
@@ -95,7 +92,7 @@ RECT View::GetNewTextRect(RECT clientRect)
 	return newTextRect;
 }
 
-std::wstring View::CharToPWChar(char ch)
+std::wstring View::CharToWstring(char ch)
 {
 	wchar_t wideChar;
 	MultiByteToWideChar(CP_UTF8, 0, &ch, 1, &wideChar, 1);
@@ -105,55 +102,55 @@ std::wstring View::CharToPWChar(char ch)
 void View::DrawLetters(HDC hdc, RECT textRect)
 {
 	int rowsHeight = (textRect.bottom - textRect.top) / rowCount;
-	int position = currentPosition;
+	int position = startPosition;
 	std::vector<Letter> letters = typing->GetLetters();
 	SetBkColor(hdc, RGB(0, 0, 0));
 
 	for (int row = 0; row < rowCount; row++)
 	{
 		int lettersCount = HowManyLettersCanBeContained(textRect, position);
-		position += lettersCount;
+
 
 		for (int i = 0; i < lettersCount; i++)
 		{
-
-			if (!letters[i].GetIsCorrect())
+			if (position + i == typing->GetCurrentInd())
 			{
-				SetTextColor(hdc, RGB(255, 0, 0));
+
+				SetBkColor(hdc, RGB(50, 50, 50));
 			}
 			else
 			{
-				SetTextColor(hdc, RGB(255, 255, 255));
+				SetBkColor(hdc, RGB(0, 0, 0));
 			}
+
+			if (position + i <= typing->GetCurrentInd())
+			{
+
+				if (!letters[position + i].GetIsCorrect())
+				{
+					SetTextColor(hdc, RGB(255, 0, 0));
+					/*if (letters[i].GetLetter() == ' ')
+					{
+
+					}*/
+				}
+				else
+				{
+					SetTextColor(hdc, RGB(255, 255, 255));
+				}
+
+			}
+			else
+			{
+				SetTextColor(hdc, RGB(40, 40, 40));
+			}
+
+
 			TextOut(hdc, textRect.left + i * letterWidth, textRect.top + row * rowsHeight,
-				CharToPWChar(letters[i].GetLetter()).c_str(), 1);
+				CharToWstring(letters[position + i].GetLetter()).c_str(), 1);
 		}
+		position += lettersCount;
 	}
-	//int a = HowManyLettersCanBeContained(textRect,0);
-
-	//SIZE fontHeight;
-	//SetTextColor(hdc, RGB(255, 255, 255));
-	//SetBkColor(hdc, RGB(0, 0, 0));
-	//GetTextExtentPoint32(hdc, L"s", 1, &fontHeight);
-	//long y = drawingArea.top;
-	//int wordIndex = 0;
-
-	//for (BYTE i = 0; i < rowsCount; i++) {
-
-	//	BYTE wordsAmount = HowManyWordsCanBeContained(hdc, drawingArea.right - drawingArea.left, font, words);
-	//	wordIndex += wordsAmount;
-	//	wchar_t* TextRow = ExtractWords(wordsAmount, words, wordIndex);
-
-	//	TextOut(hdc, drawingArea.left, y, TextRow, lstrlen(TextRow));
-	//	y += rowsHeight;
-
-	//	// Освобождаем выделенную память после использования
-	//	//words.erase(words.begin(), words.begin() + wordsAmount);
-	//	delete[] TextRow;
-
-	//}
-
-
 }
 
 void View::GetLetterWidth(HDC hdc)
@@ -164,23 +161,20 @@ void View::GetLetterWidth(HDC hdc)
 	letterWidth = letterSize.cx;
 }
 
+//void View::GetLetterHeight(HDC hdc)
+//{
+//	SelectObject(hdc, font);
+//	SIZE letterSize;
+//	GetTextExtentPoint32(hdc, L"w", 1, &letterSize);
+//	letterHeight = letterSize.cy;
+//}
+
 void View::DefineNewBoundaries(HDC hdc)
 {
-	if (typing->GetCurrentInd() > endPosition) {
+	/*if (typing->GetCurrentInd() > endPosition) {
 
-	}
-}
-
-void View::DrawCurrentPosition(HDC hdc)
-{
-
-	HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 255));  
-	HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, hBrush);
-
-	SelectObject(hdc, hOldBrush);
-
-	//Rectangle(hdc);
-
-	DeleteObject(hBrush);
+	}*/
 
 }
+
+
