@@ -2,9 +2,13 @@
 #include <string>
 #include <vector>
 #include "Letter.h"
+#include "Timer.h"
 #include <fstream>
 #include <string>
 #include <cctype>
+#include <algorithm>
+#include <random>
+
 class Typing
 {
 public:
@@ -17,5 +21,6 @@ private:
 	int currentInd;
 	int wordsAmount;
 	void ResourceLoading();
+
 };
 

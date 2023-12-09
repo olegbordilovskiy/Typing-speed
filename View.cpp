@@ -68,7 +68,7 @@ void View::FontLoading()
 
 	LOGFONT lf;
 	memset(&lf, 0, sizeof(LOGFONT)); // Инициализация
-	lf.lfHeight = 72; // Размер шрифта
+	lf.lfHeight = 56; // Размер шрифта
 	lf.lfWeight = FW_NORMAL; // Вес шрифта
 	lf.lfItalic = FALSE; // Курсив
 	lf.lfUnderline = FALSE; // Подчеркивание
@@ -87,7 +87,7 @@ RECT View::GetNewTextRect(RECT clientRect)
 	float coefY = 1.6;
 	newTextRect.left = clientRect.right - clientRect.right / coefX;
 	newTextRect.top = clientRect.bottom - clientRect.bottom / coefY;
-	newTextRect.right = clientRect.right / coefX;
+	newTextRect.right = clientRect.right / (coefX-0.1);
 	newTextRect.bottom = clientRect.bottom / coefY;
 	return newTextRect;
 }
@@ -101,7 +101,7 @@ std::wstring View::CharToWstring(char ch)
 
 void View::DrawLetters(HDC hdc, RECT textRect)
 {
-	int rowsHeight = (textRect.bottom - textRect.top) / rowCount;
+	int rowsHeight = (textRect.bottom - textRect.top) / rowCount * 0.7;
 	int position = startPosition;
 	std::vector<Letter> letters = typing->GetLetters();
 	SetBkColor(hdc, RGB(0, 0, 0));
@@ -110,22 +110,10 @@ void View::DrawLetters(HDC hdc, RECT textRect)
 	{
 		int lettersCount = HowManyLettersCanBeContained(textRect, position);
 
-
 		for (int i = 0; i < lettersCount; i++)
 		{
-			if (position + i == typing->GetCurrentInd())
+			if (position + i <= currentPosition)
 			{
-
-				SetBkColor(hdc, RGB(50, 50, 50));
-			}
-			else
-			{
-				SetBkColor(hdc, RGB(0, 0, 0));
-			}
-
-			if (position + i <= typing->GetCurrentInd())
-			{
-
 				if (!letters[position + i].GetIsCorrect())
 				{
 					SetTextColor(hdc, RGB(255, 0, 0));
@@ -139,18 +127,28 @@ void View::DrawLetters(HDC hdc, RECT textRect)
 					SetTextColor(hdc, RGB(255, 255, 255));
 				}
 
+				if (position + i == currentPosition)
+				{
+					SetBkColor(hdc, RGB(50, 50, 50));
+					SetTextColor(hdc, RGB(255, 255, 255));
+				}
+				else
+				{
+					SetBkColor(hdc, RGB(0, 0, 0));
+				}
 			}
 			else
 			{
 				SetTextColor(hdc, RGB(40, 40, 40));
+				SetBkColor(hdc, RGB(0, 0, 0));
 			}
-
 
 			TextOut(hdc, textRect.left + i * letterWidth, textRect.top + row * rowsHeight,
 				CharToWstring(letters[position + i].GetLetter()).c_str(), 1);
 		}
 		position += lettersCount;
 	}
+	endPosition = position;
 }
 
 void View::GetLetterWidth(HDC hdc)
@@ -161,19 +159,17 @@ void View::GetLetterWidth(HDC hdc)
 	letterWidth = letterSize.cx;
 }
 
-//void View::GetLetterHeight(HDC hdc)
-//{
-//	SelectObject(hdc, font);
-//	SIZE letterSize;
-//	GetTextExtentPoint32(hdc, L"w", 1, &letterSize);
-//	letterHeight = letterSize.cy;
-//}
-
-void View::DefineNewBoundaries(HDC hdc)
+void View::SetCurrentPosition(int currentInd)
 {
-	/*if (typing->GetCurrentInd() > endPosition) {
+	currentPosition = currentInd;
+	DefineNewBoundaries();
+}
 
-	}*/
+void View::DefineNewBoundaries()
+{
+	if (currentPosition >= endPosition) {
+		startPosition = currentPosition;
+	}
 
 }
 

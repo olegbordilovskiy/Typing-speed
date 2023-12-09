@@ -4,34 +4,40 @@
 
 #include <windows.h>
 #include <windowsx.h>
-#include "Resource.h"
-#include <vector>
-#include <string>
 #include <iostream>
-#include <fstream>
-#include <locale.h>
-#include <algorithm>
-#include <random>
 #include "Typing.h"
 #include "View.h"
 #include <cctype>
+#include <thread>
 
 using namespace std;
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+RECT GetNewTextRect(RECT clientRect);
+
 PAINTSTRUCT ps;
 RECT clientRect;
 RECT textRect;
-//vector<string> words;
-//vector <string> currentWords;
 HFONT font;
-int currentTextPosition;
-random_device random;
-mt19937 g(random());
-//View view;
 
 Typing* typ = new Typing();
+Timer* timer = new Timer();
 View view(typ);
+
+void ViewThread(HWND hwnd)
+{
+	while (true)
+	{
+		InvalidateRect(hwnd, NULL, TRUE);
+		std::this_thread::sleep_for(std::chrono::milliseconds(16));
+	}
+}
+
+void AsyncView(HWND hwnd) {
+
+	std::thread thr(ViewThread, hwnd);
+	thr.detach();
+}
 
 RECT GetNewTextRect(RECT clientRect)
 {
@@ -44,10 +50,6 @@ RECT GetNewTextRect(RECT clientRect)
 	newTextRect.bottom = clientRect.bottom / coefY;
 	return newTextRect;
 }
-
-
-
-//	shuffle(words.begin(), words.end(), g);
 
 //void FontResize(HFONT& font, RECT drawingArea)
 //{
@@ -123,12 +125,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	GetClientRect(hwnd, &clientRect);
 
 	ShowWindow(hwnd, SW_MAXIMIZE);
-	//ShowWindow(hwnd, nCmdShow);
-
 	
-	
-	
-
+	AsyncView(hwnd);
 
 	MSG msg = { };
 	while (GetMessage(&msg, NULL, 0, 0) > 0)
@@ -147,13 +145,23 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_PAINT:
 	{
 		HDC hdc = BeginPaint(hwnd, &ps);
-		FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 5));
-		//DrawRectangle(hdc);
-		//DrawTestingWords(hdc, font, textRect, words);
 
-		view.Update(hdc, clientRect);
+		// Создаем буфер
+		HDC hdcBuffer = CreateCompatibleDC(hdc);
+		HBITMAP hBitmap = CreateCompatibleBitmap(hdc, clientRect.right, clientRect.bottom);
+		SelectObject(hdcBuffer, hBitmap);
 
-		//view.Update(hdc, clientRect);
+		// Рисование в hdcBuffer
+		FillRect(hdcBuffer, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 5));
+		view.Update(hdcBuffer, clientRect);
+
+		// Копирование изображения из hdcBuffer в hdc
+		BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, hdcBuffer, 0, 0, SRCCOPY);
+
+		// Очистка ресурсов
+		DeleteObject(hBitmap);
+		DeleteDC(hdcBuffer);
+
 		EndPaint(hwnd, &ps);
 
 	}
@@ -161,11 +169,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	case WM_KEYDOWN:
 	{
+		//timer->StartTimer(60);
 		char lowerCase = tolower(wParam);
-		//char lowerCase = wParam;
 		typ->ChangeState(lowerCase);
-		
-		InvalidateRect(hwnd, NULL, TRUE);
+		view.SetCurrentPosition(typ->GetCurrentInd());
 	}
 
 	case WM_SIZE:
@@ -176,7 +183,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		InvalidateRect(hwnd, NULL, TRUE);
 		return 0;
 	}
-
 
 	case WM_DESTROY:
 		PostQuitMessage(0);

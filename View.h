@@ -12,8 +12,7 @@ private:
 	void FontLoading();
 	void DrawLetters(HDC hdc, RECT clientRect);
 	void GetLetterWidth(HDC hdc);
-	//void GetLetterHeight(HDC hdc);
-	void DefineNewBoundaries(HDC hdc);
+	void DefineNewBoundaries();
 	RECT GetNewTextRect(RECT clientRect);
 	std::wstring CharToWstring(char ch);
 
@@ -21,7 +20,6 @@ private:
 	int currentPosition;
 	int endPosition;
 	int letterWidth;
-	//int letterHeight;
 	int rowCount;
 	Typing* typing;
 	HFONT font;
@@ -30,5 +28,6 @@ private:
 public:
 	View(Typing* typing);
 	void Update(HDC hdc, RECT clientRect);
+	void SetCurrentPosition(int currentInd);
 };
 

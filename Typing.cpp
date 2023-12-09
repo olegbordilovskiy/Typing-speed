@@ -4,6 +4,7 @@
 Typing::Typing()
 {
 	ResourceLoading();
+
 }
 
 void Typing::ChangeState(char letter)
@@ -41,25 +42,36 @@ std::vector<Letter> Typing::GetLetters()
 
 void Typing::ResourceLoading()
 {
+	std::random_device rd;
+	std::mt19937 rng(rd());
+	std::vector<std::string> words;
 	const char* textSource = "C:\\Users\\vanas\\OneDrive\\Рабочий стол\\3 курс\\СП\\Typing speed\\resources\\words.txt";
+
 	std::ifstream textFile(textSource);
 	if (!(textFile.is_open()))
 	{
 		return;
 	}
 
+	std::string word;
+	while (std::getline(textFile, word))
+	{
+		words.push_back(word);
+	}
+	textFile.close();
+
+	std::shuffle(words.begin(), words.end(), rng);
+
 	char letterSymbol;
-	while (textFile.get(letterSymbol)) {
-		if (letterSymbol != '\n') 
-		{
+
+	for (const std::string& word : words) {
+		for (char letterSymbol : word) {
+
 			Letter letter(letterSymbol);
 			letters.push_back(letter);
 		}
-		else 
-		{
-			Letter letter(' ');
-			letters.push_back(letter);
-		}
+		Letter letter(' ');
+		letters.push_back(letter);
 	}
 }
 

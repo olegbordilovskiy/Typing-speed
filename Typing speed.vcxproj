@@ -131,12 +131,14 @@
     <ClInclude Include="Letter.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Timer.h" />
     <ClInclude Include="Typing speed.h" />
     <ClInclude Include="Typing.h" />
     <ClInclude Include="View.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Letter.cpp" />
+    <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Typing speed.cpp" />
     <ClCompile Include="Typing.cpp" />
     <ClCompile Include="View.cpp" />
