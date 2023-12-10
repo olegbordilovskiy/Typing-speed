@@ -11,13 +11,15 @@ View::View(Typing* typing)
 	rowCount = 3;
 }
 
-void View::Update(HDC hdc, RECT clientRect)
+void View::TestingUpdate(HDC hdc, RECT clientRect)
 {
 	RECT textRect = GetNewTextRect(clientRect);
 	//HFONT oldFont = (HFONT)SelectObject(hdc, font);
+	FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 5));
 
 	GetLetterWidth(hdc);
 	//DrawCurrentPosition(hdc);
+	DrawTimer(hdc, clientRect);
 	DrawLetters(hdc, textRect);
 
 	//SelectObject(hdc, oldFont);
@@ -151,12 +153,31 @@ void View::DrawLetters(HDC hdc, RECT textRect)
 	endPosition = position;
 }
 
+void View::DrawTimer(HDC hdc, RECT clientRect)
+{
+	int x = (clientRect.right - clientRect.left) / 2.1;
+	int y = (clientRect.bottom - clientRect.top) / 5;
+	int availableTime = typing->CheckTime();
+	std::wstring timeWStr = std::to_wstring(availableTime);
+
+	SetBkColor(hdc, RGB(0, 0, 0));
+	SetTextColor(hdc, RGB(255, 255, 255));
+	TextOut(hdc, x, y, timeWStr.c_str(), GetNumberLength(availableTime));
+}
+
 void View::GetLetterWidth(HDC hdc)
 {
 	SelectObject(hdc, font);
 	SIZE letterSize;
 	GetTextExtentPoint32(hdc, L"w", 1, &letterSize);
 	letterWidth = letterSize.cx;
+}
+
+int View::GetNumberLength(int number)
+{
+	std::string numberString = std::to_string(number);
+	int length = static_cast<int>(numberString.length());
+	return length;
 }
 
 void View::SetCurrentPosition(int currentInd)

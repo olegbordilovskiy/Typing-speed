@@ -15,14 +15,26 @@ using namespace std;
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 RECT GetNewTextRect(RECT clientRect);
 
-PAINTSTRUCT ps;
 RECT clientRect;
 RECT textRect;
-HFONT font;
+PAINTSTRUCT ps;
 
-Typing* typ = new Typing();
-Timer* timer = new Timer();
-View view(typ);
+typedef void (View::* ViewUpdate)(HDC hdc, RECT clientRect);
+
+Typing* type = new Typing();
+//Timer* timer = new Timer();
+View view(type);
+
+const int seconds = 60;
+
+enum ApplicationConditions
+{
+	preTest,
+	Testing,
+	Result
+};
+
+ApplicationConditions appCondition;
 
 void ViewThread(HWND hwnd)
 {
@@ -49,6 +61,29 @@ RECT GetNewTextRect(RECT clientRect)
 	newTextRect.right = clientRect.right / coefX;
 	newTextRect.bottom = clientRect.bottom / coefY;
 	return newTextRect;
+}
+
+void DoubleBuffering(HWND hwnd, ViewUpdate updateFunction, View& view)
+{
+	HDC hdc = BeginPaint(hwnd, &ps);
+	HDC hdcBuffer = CreateCompatibleDC(hdc);
+	HBITMAP hBitmap = CreateCompatibleBitmap(hdc, clientRect.right, clientRect.bottom);
+	SelectObject(hdcBuffer, hBitmap);
+
+	// Рисование в hdcBuffer
+	//FillRect(hdcBuffer, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 5));
+	//view.TestingUpdate(hdcBuffer, clientRect);
+	//(view.*pViewUpdateFunc)(hdcBuffer, clientRect);
+	(view.*updateFunction)(hdcBuffer, clientRect);
+
+	// Копирование изображения из hdcBuffer в hdc
+	BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, hdcBuffer, 0, 0, SRCCOPY);
+
+	// Очистка ресурсов
+	DeleteObject(hBitmap);
+	DeleteDC(hdcBuffer);
+
+	EndPaint(hwnd, &ps);
 }
 
 //void FontResize(HFONT& font, RECT drawingArea)
@@ -122,13 +157,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		return 0;
 	}
 
+	appCondition = preTest;
+
 	GetClientRect(hwnd, &clientRect);
 
 	ShowWindow(hwnd, SW_MAXIMIZE);
-	
+
 	AsyncView(hwnd);
 
 	MSG msg = { };
+
 	while (GetMessage(&msg, NULL, 0, 0) > 0)
 	{
 		TranslateMessage(&msg);
@@ -144,35 +182,45 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_PAINT:
 	{
-		HDC hdc = BeginPaint(hwnd, &ps);
-
-		// Создаем буфер
-		HDC hdcBuffer = CreateCompatibleDC(hdc);
-		HBITMAP hBitmap = CreateCompatibleBitmap(hdc, clientRect.right, clientRect.bottom);
-		SelectObject(hdcBuffer, hBitmap);
-
-		// Рисование в hdcBuffer
-		FillRect(hdcBuffer, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 5));
-		view.Update(hdcBuffer, clientRect);
-
-		// Копирование изображения из hdcBuffer в hdc
-		BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, hdcBuffer, 0, 0, SRCCOPY);
-
-		// Очистка ресурсов
-		DeleteObject(hBitmap);
-		DeleteDC(hdcBuffer);
-
-		EndPaint(hwnd, &ps);
-
+		switch (appCondition)
+		{
+		case preTest:
+			/*FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 5));
+			view.Update(hdc, clientRect);*/
+			DoubleBuffering(hwnd, &View::TestingUpdate, view);
+			break;
+		case Testing:
+			DoubleBuffering(hwnd, &View::TestingUpdate, view);
+			break;
+		case Result:
+			break;
+		default:
+			break;
+		}
 	}
 	return 0;
 
 	case WM_KEYDOWN:
 	{
-		//timer->StartTimer(60);
-		char lowerCase = tolower(wParam);
-		typ->ChangeState(lowerCase);
-		view.SetCurrentPosition(typ->GetCurrentInd());
+		char lowerCase;
+		switch (appCondition)
+		{
+		case preTest:
+			appCondition = Testing;
+			//timer->StartTimer(10);
+			type->StartTyping(seconds);
+
+			break;
+		case Testing:
+			lowerCase = tolower(wParam);
+			type->ChangeState(lowerCase);
+			view.SetCurrentPosition(type->GetCurrentInd());
+			break;
+		case Result:
+			break;
+		default:
+			break;
+		}
 	}
 
 	case WM_SIZE:

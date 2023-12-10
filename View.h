@@ -11,7 +11,9 @@ private:
 	int GetWordSize(int position);
 	void FontLoading();
 	void DrawLetters(HDC hdc, RECT clientRect);
+	void DrawTimer(HDC hdc, RECT clientRect);
 	void GetLetterWidth(HDC hdc);
+	int GetNumberLength(int number);
 	void DefineNewBoundaries();
 	RECT GetNewTextRect(RECT clientRect);
 	std::wstring CharToWstring(char ch);
@@ -24,10 +26,11 @@ private:
 	Typing* typing;
 	HFONT font;
 	RECT clientRect;
+	PAINTSTRUCT ps;
 
 public:
 	View(Typing* typing);
-	void Update(HDC hdc, RECT clientRect);
+	void TestingUpdate(HDC hdc, RECT clientRect);
 	void SetCurrentPosition(int currentInd);
 };
 

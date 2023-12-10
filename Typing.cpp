@@ -4,7 +4,6 @@
 Typing::Typing()
 {
 	ResourceLoading();
-
 }
 
 void Typing::ChangeState(char letter)
@@ -38,6 +37,16 @@ int Typing::GetCurrentInd()
 std::vector<Letter> Typing::GetLetters()
 {
 	return letters;
+}
+
+void Typing::StartTyping(int secondsForTimer)
+{
+	timer.StartTimer(secondsForTimer);
+}
+
+double Typing::CheckTime()
+{
+	return timer.GetAvailableTime();
 }
 
 void Typing::ResourceLoading()
