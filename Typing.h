@@ -17,6 +17,7 @@ public:
 	void ChangeState(char letter);
 	int GetCurrentInd();
 	void SetTimeForTesting(int seconds);
+	int GetTimeForTesting();
 	void StartTyping();
 	double CheckTime();
 	std::vector<Letter> GetLetters();

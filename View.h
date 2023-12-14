@@ -28,6 +28,7 @@ private:
 	HFONT font;
 	RECT clientRect;
 	PAINTSTRUCT ps;
+	HBRUSH hBrush;
 
 public:
 	View(Typing* typing);

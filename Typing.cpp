@@ -5,7 +5,7 @@ Typing::Typing()
 {
 	ResourceLoading();
 	//currentInd = 150;
-	timeForTesting = 10;
+	timeForTesting = 100;
 }
 
 void Typing::ChangeState(char letter)
@@ -38,6 +38,11 @@ int Typing::GetCurrentInd()
 void Typing::SetTimeForTesting(int seconds)
 {
 	this->timeForTesting = seconds;
+}
+
+int Typing::GetTimeForTesting()
+{
+	return this->timeForTesting;
 }
 
 std::vector<Letter> Typing::GetLetters()

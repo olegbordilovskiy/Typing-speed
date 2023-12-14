@@ -25,6 +25,7 @@ void View::TestingUpdate(HDC hdc, RECT clientRect)
 	DrawLetters(hdc, textRect);
 
 	//SelectObject(hdc, oldFont);
+	DeleteObject(hBrush);
 }
 
 void View::ResultUpdate(HDC hdc, RECT clientRect)
@@ -173,15 +174,33 @@ void View::DrawLetters(HDC hdc, RECT textRect)
 
 void View::DrawTimer(HDC hdc, RECT clientRect)
 {
-	int x = (clientRect.right - clientRect.left) / 2.1;
-	int y = (clientRect.bottom - clientRect.top) / 5;
-	int availableTime = typing->CheckTime();
-	std::wstring timeWStr = std::to_wstring(availableTime);
+	int clientRectWidth = clientRect.right - clientRect.left;
+	int clientRectHeight = clientRect.bottom - clientRect.top;
+	int numberTimerX = clientRectWidth / 2.1;
+	int numberTimerY = clientRectHeight / 5;
+	int lineTimerWidth = clientRectHeight * 0.02;
+	int timeForTesting = typing->GetTimeForTesting();
+	int partWidth = clientRectWidth / timeForTesting;
+	int partGBValue = 255 / clientRectWidth;
+
+	int iAvailableTime = typing->CheckTime();
+	double dAvailableTime = typing->CheckTime();
+	int lineTimerLength = partWidth * dAvailableTime;
+	
+	int curGBValue = (255 * (dAvailableTime / timeForTesting));
+
+	std::wstring timeWStr = std::to_wstring(iAvailableTime);
 	timeWStr += L"s";
 
 	SetBkColor(hdc, RGB(0, 0, 0));
 	SetTextColor(hdc, RGB(255, 255, 255));
-	TextOut(hdc, x, y, timeWStr.c_str(), GetNumberLength(availableTime) + 1);
+	TextOut(hdc, numberTimerX, numberTimerY, timeWStr.c_str(), GetNumberLength(iAvailableTime) + 1);
+
+	hBrush = CreateSolidBrush(RGB(255, curGBValue, curGBValue));
+	SelectObject(hdc, hBrush);
+	Rectangle(hdc, clientRect.left, clientRect.top, lineTimerLength, lineTimerWidth);
+
+
 }
 
 void View::GetLetterWidth(HDC hdc)

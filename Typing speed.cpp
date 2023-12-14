@@ -23,10 +23,8 @@ CRITICAL_SECTION criticalSection;
 typedef void (View::* ViewUpdate)(HDC hdc, RECT clientRect);
 
 Typing* typing;
-//Timer* timer = new Timer();
 View* view;
 
-const int seconds = 60;
 
 enum ApplicationConditions
 {
@@ -63,7 +61,7 @@ void AsyncRequestForView(HWND hwnd) {
 		while (true)
 		{
 			InvalidateRect(hwnd, NULL, true);
-			std::this_thread::sleep_for(std::chrono::milliseconds(16));
+			std::this_thread::sleep_for(std::chrono::milliseconds(8));
 		}
 		});
 	th.detach();
