@@ -18,12 +18,13 @@ RECT GetNewTextRect(RECT clientRect);
 RECT clientRect;
 RECT textRect;
 PAINTSTRUCT ps;
+CRITICAL_SECTION criticalSection;
 
 typedef void (View::* ViewUpdate)(HDC hdc, RECT clientRect);
 
-Typing* type = new Typing();
+Typing* typing;
 //Timer* timer = new Timer();
-View view(type);
+View* view;
 
 const int seconds = 60;
 
@@ -36,20 +37,52 @@ enum ApplicationConditions
 
 ApplicationConditions appCondition;
 
-void ViewThread(HWND hwnd)
+void AsyncCheckTimeForTestingThread()
 {
-	while (true)
-	{
-		InvalidateRect(hwnd, NULL, TRUE);
-		std::this_thread::sleep_for(std::chrono::milliseconds(16));
-	}
+	std::thread th([&]()
+		{
+			while (true)
+			{
+				EnterCriticalSection(&criticalSection);
+				if (appCondition == Testing) {
+					if (typing->CheckTime() == 0)
+					{
+						appCondition = Result;
+					}
+				}
+				LeaveCriticalSection(&criticalSection);
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			}
+		});
+	th.detach();
 }
 
-void AsyncView(HWND hwnd) {
+void AsyncRequestForView(HWND hwnd) {
 
-	std::thread thr(ViewThread, hwnd);
-	thr.detach();
+	std::thread th([hwnd]() {
+		while (true)
+		{
+			InvalidateRect(hwnd, NULL, true);
+			std::this_thread::sleep_for(std::chrono::milliseconds(16));
+		}
+		});
+	th.detach();
 }
+
+//void ViewThread(HWND hwnd)
+//{
+//	while (true)
+//	{
+//		InvalidateRect(hwnd, NULL, TRUE);
+//		std::this_thread::sleep_for(std::chrono::milliseconds(16));
+//	}
+//}
+//
+//void AsyncView(HWND hwnd) {
+//
+//	std::thread thr(ViewThread, hwnd);
+//	thr.detach();
+//}
 
 RECT GetNewTextRect(RECT clientRect)
 {
@@ -158,12 +191,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	}
 
 	appCondition = preTest;
+	InitializeCriticalSection(&criticalSection);
+	typing = new Typing();
+	view = new View(typing);
 
 	GetClientRect(hwnd, &clientRect);
 
 	ShowWindow(hwnd, SW_MAXIMIZE);
 
-	AsyncView(hwnd);
+	AsyncRequestForView(hwnd);
+	AsyncCheckTimeForTestingThread();
 
 	MSG msg = { };
 
@@ -182,45 +219,47 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_PAINT:
 	{
+		EnterCriticalSection(&criticalSection);
 		switch (appCondition)
 		{
 		case preTest:
-			/*FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 5));
-			view.Update(hdc, clientRect);*/
-			DoubleBuffering(hwnd, &View::TestingUpdate, view);
+			DoubleBuffering(hwnd, &View::TestingUpdate, *view);
 			break;
 		case Testing:
-			DoubleBuffering(hwnd, &View::TestingUpdate, view);
+			DoubleBuffering(hwnd, &View::TestingUpdate, *view);
 			break;
 		case Result:
+			DoubleBuffering(hwnd, &View::ResultUpdate, *view);
 			break;
 		default:
 			break;
 		}
+		LeaveCriticalSection(&criticalSection);
 	}
 	return 0;
 
 	case WM_KEYDOWN:
 	{
 		char lowerCase;
+		EnterCriticalSection(&criticalSection);
+
 		switch (appCondition)
 		{
 		case preTest:
 			appCondition = Testing;
-			//timer->StartTimer(10);
-			type->StartTyping(seconds);
+			typing->StartTyping();
 
-			break;
 		case Testing:
 			lowerCase = tolower(wParam);
-			type->ChangeState(lowerCase);
-			view.SetCurrentPosition(type->GetCurrentInd());
+			typing->ChangeState(lowerCase);
+			view->SetCurrentPosition(typing->GetCurrentInd());
 			break;
 		case Result:
 			break;
 		default:
 			break;
 		}
+		LeaveCriticalSection(&criticalSection);
 	}
 
 	case WM_SIZE:
@@ -234,6 +273,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	case WM_DESTROY:
 		PostQuitMessage(0);
+		DeleteCriticalSection(&criticalSection);
 		return 0;
 	}
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);

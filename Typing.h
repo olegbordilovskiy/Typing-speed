@@ -16,16 +16,17 @@ public:
 	Typing();
 	void ChangeState(char letter);
 	int GetCurrentInd();
-	std::vector<Letter> GetLetters();
-	void StartTyping(int secondsForTimer);
+	void SetTimeForTesting(int seconds);
+	void StartTyping();
 	double CheckTime();
+	std::vector<Letter> GetLetters();
 private:
-	std::vector<Letter> letters;
-	Timer timer;
+	int timeForTesting;
 	int currentInd;
 	int wordsAmount;
 	void ResourceLoading();
-	
+	std::vector<Letter> letters;
+	Timer timer;
 
 };
 

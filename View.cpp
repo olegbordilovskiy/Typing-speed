@@ -17,7 +17,9 @@ void View::TestingUpdate(HDC hdc, RECT clientRect)
 	//HFONT oldFont = (HFONT)SelectObject(hdc, font);
 	FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 5));
 
+
 	GetLetterWidth(hdc);
+	DefineNewBoundaries(hdc, textRect);
 	//DrawCurrentPosition(hdc);
 	DrawTimer(hdc, clientRect);
 	DrawLetters(hdc, textRect);
@@ -25,37 +27,53 @@ void View::TestingUpdate(HDC hdc, RECT clientRect)
 	//SelectObject(hdc, oldFont);
 }
 
+void View::ResultUpdate(HDC hdc, RECT clientRect)
+{
+	FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
 
+}
 
-int View::HowManyLettersCanBeContained(RECT textRect, int startLetterIndex)
+int View::HowManyLettersCanBeContained(RECT textRect, int startLetterPosition, bool direction)
 {
 	long availableDistance = textRect.right - textRect.left;
 	long occupiedDistance = 0;
 	int lettersAmount = 0;
 	int totalLettersAmount = 0;
-	int position = startLetterIndex;
+	int position = startLetterPosition;
+	int sign;
+
+	if (direction) sign = 1;
+	else sign = -1;
 
 	while (availableDistance > 0)
 	{
-		if (availableDistance - GetWordSize(position) < 0) break;
-		occupiedDistance = GetWordSize(position);
+		if (position < 0 || (availableDistance - GetWordSize(position, direction) < 0)) break;
+		occupiedDistance = GetWordSize(position, direction);
 		lettersAmount = occupiedDistance / letterWidth;
 		availableDistance -= occupiedDistance;
-		position += lettersAmount;
+		position += lettersAmount * sign;
 		totalLettersAmount += lettersAmount;
 	}
 	return totalLettersAmount;
 }
 
-int View::GetWordSize(int position)
+int View::GetWordSize(int position, bool direction)
 {
 	std::vector<Letter> letters = typing->GetLetters();
+	int sign;
 	int wordSize = 0;
-	while (letters[position].GetLetter() != ' ')
+
+	if (direction) sign = 1;
+	else sign = -1;
+
+	while (position >= 0 && letters[position].GetLetter() != ' ')
 	{
 		wordSize += letterWidth;
-		position++;
+		position += sign;
 	}
+	/*if (position != -1)
+		return wordSize + letterWidth;
+	else*/
 	return wordSize + letterWidth;
 }
 
@@ -89,7 +107,7 @@ RECT View::GetNewTextRect(RECT clientRect)
 	float coefY = 1.6;
 	newTextRect.left = clientRect.right - clientRect.right / coefX;
 	newTextRect.top = clientRect.bottom - clientRect.bottom / coefY;
-	newTextRect.right = clientRect.right / (coefX-0.1);
+	newTextRect.right = clientRect.right / (coefX - 0.1);
 	newTextRect.bottom = clientRect.bottom / coefY;
 	return newTextRect;
 }
@@ -110,7 +128,7 @@ void View::DrawLetters(HDC hdc, RECT textRect)
 
 	for (int row = 0; row < rowCount; row++)
 	{
-		int lettersCount = HowManyLettersCanBeContained(textRect, position);
+		int lettersCount = HowManyLettersCanBeContained(textRect, position, true);
 
 		for (int i = 0; i < lettersCount; i++)
 		{
@@ -150,7 +168,7 @@ void View::DrawLetters(HDC hdc, RECT textRect)
 		}
 		position += lettersCount;
 	}
-	endPosition = position;
+	endPosition = position - 1;
 }
 
 void View::DrawTimer(HDC hdc, RECT clientRect)
@@ -159,10 +177,11 @@ void View::DrawTimer(HDC hdc, RECT clientRect)
 	int y = (clientRect.bottom - clientRect.top) / 5;
 	int availableTime = typing->CheckTime();
 	std::wstring timeWStr = std::to_wstring(availableTime);
+	timeWStr += L"s";
 
 	SetBkColor(hdc, RGB(0, 0, 0));
 	SetTextColor(hdc, RGB(255, 255, 255));
-	TextOut(hdc, x, y, timeWStr.c_str(), GetNumberLength(availableTime));
+	TextOut(hdc, x, y, timeWStr.c_str(), GetNumberLength(availableTime) + 1);
 }
 
 void View::GetLetterWidth(HDC hdc)
@@ -183,15 +202,32 @@ int View::GetNumberLength(int number)
 void View::SetCurrentPosition(int currentInd)
 {
 	currentPosition = currentInd;
-	DefineNewBoundaries();
 }
 
-void View::DefineNewBoundaries()
+void View::SetNewStartPosition(HDC hdc, RECT textRect)
 {
-	if (currentPosition >= endPosition) {
+	int position = typing->GetCurrentInd();
+
+	for (int row = rowCount; row > 0; row--)
+	{
+		position -= HowManyLettersCanBeContained(textRect, position, false);
+
+	}
+	startPosition = position + 2;
+	if (startPosition == 1) startPosition = 0;
+}
+
+void View::DefineNewBoundaries(HDC hdc, RECT textRect)
+{
+	if (currentPosition > endPosition)
+	{
 		startPosition = currentPosition;
 	}
 
+	if (currentPosition < startPosition)
+	{
+		SetNewStartPosition(hdc, textRect);
+	}
 }
 
 

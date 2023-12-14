@@ -7,14 +7,15 @@
 class View
 {
 private:
-	int HowManyLettersCanBeContained(RECT textRect, int startLetterIndex);
-	int GetWordSize(int position);
+	int HowManyLettersCanBeContained(RECT textRect, int startLetterIndex, bool direction);
+	int GetWordSize(int position, bool direction);
 	void FontLoading();
 	void DrawLetters(HDC hdc, RECT clientRect);
 	void DrawTimer(HDC hdc, RECT clientRect);
 	void GetLetterWidth(HDC hdc);
 	int GetNumberLength(int number);
-	void DefineNewBoundaries();
+	void SetNewStartPosition(HDC hdc, RECT textRect);
+	void DefineNewBoundaries(HDC hdc, RECT textRect);
 	RECT GetNewTextRect(RECT clientRect);
 	std::wstring CharToWstring(char ch);
 
@@ -31,6 +32,7 @@ private:
 public:
 	View(Typing* typing);
 	void TestingUpdate(HDC hdc, RECT clientRect);
+	void ResultUpdate(HDC hdc, RECT clientRect);
 	void SetCurrentPosition(int currentInd);
 };
 

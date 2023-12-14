@@ -4,6 +4,8 @@
 Typing::Typing()
 {
 	ResourceLoading();
+	//currentInd = 150;
+	timeForTesting = 10;
 }
 
 void Typing::ChangeState(char letter)
@@ -26,7 +28,6 @@ void Typing::ChangeState(char letter)
 		currentInd++;
 		return;
 	}
-	//currentInd++;
 }
 
 int Typing::GetCurrentInd()
@@ -34,14 +35,19 @@ int Typing::GetCurrentInd()
 	return currentInd;
 }
 
+void Typing::SetTimeForTesting(int seconds)
+{
+	this->timeForTesting = seconds;
+}
+
 std::vector<Letter> Typing::GetLetters()
 {
 	return letters;
 }
 
-void Typing::StartTyping(int secondsForTimer)
+void Typing::StartTyping()
 {
-	timer.StartTimer(secondsForTimer);
+	timer.StartTimer(timeForTesting);
 }
 
 double Typing::CheckTime()
@@ -54,7 +60,7 @@ void Typing::ResourceLoading()
 	std::random_device rd;
 	std::mt19937 rng(rd());
 	std::vector<std::string> words;
-	const char* textSource = "C:\\Users\\vanas\\OneDrive\\Рабочий стол\\3 курс\\СП\\Typing speed\\resources\\words.txt";
+	const char* textSource = "resources\\words.txt";
 
 	std::ifstream textFile(textSource);
 	if (!(textFile.is_open()))
@@ -69,7 +75,7 @@ void Typing::ResourceLoading()
 	}
 	textFile.close();
 
-	std::shuffle(words.begin(), words.end(), rng);
+	//std::shuffle(words.begin(), words.end(), rng);
 
 	char letterSymbol;
 
