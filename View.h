@@ -13,7 +13,8 @@ private:
 	void DrawLetters(HDC hdc, RECT clientRect);
 	void DrawTimer(HDC hdc, RECT clientRect);
 	void DrawSpaceError(HDC hdc, RECT spaceErrorRect);
-	void GetLetterWidth(HDC hdc);
+	void SetLetterWidth(HDC hdc);
+	void SetLetterHeight(HDC hdc);
 	int GetNumberLength(int number);
 	void SetNewStartPosition(HDC hdc, RECT textRect);
 	void SetNewFontSize(RECT clientRect);
@@ -25,6 +26,7 @@ private:
 	int currentPosition;
 	int endPosition;
 	int letterWidth;
+	int letterHeight;
 	int rowCount;
 	int fontSize;
 	Typing* typing;

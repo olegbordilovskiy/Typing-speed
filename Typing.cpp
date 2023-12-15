@@ -4,8 +4,7 @@
 Typing::Typing()
 {
 	ResourceLoading();
-	//currentInd = 150;
-	timeForTesting = 20;
+	timeForTesting = 200;
 }
 
 void Typing::ChangeState(char letter)
