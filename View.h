@@ -12,6 +12,7 @@ private:
 	void FontLoading();
 	void DrawLetters(HDC hdc, RECT clientRect);
 	void DrawTimer(HDC hdc, RECT clientRect);
+	void DrawSpaceError(HDC hdc, RECT spaceErrorRect);
 	void GetLetterWidth(HDC hdc);
 	int GetNumberLength(int number);
 	void SetNewStartPosition(HDC hdc, RECT textRect);
@@ -27,7 +28,7 @@ private:
 	Typing* typing;
 	HFONT font;
 	RECT clientRect;
-	PAINTSTRUCT ps;
+	//PAINTSTRUCT ps;
 	HBRUSH hBrush;
 
 public:

@@ -15,13 +15,14 @@ void View::TestingUpdate(HDC hdc, RECT clientRect)
 {
 	RECT textRect = GetNewTextRect(clientRect);
 	//HFONT oldFont = (HFONT)SelectObject(hdc, font);
-	FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 5));
+	FillRect(hdc, &clientRect, (HBRUSH)(COLOR_WINDOW + 5));
 
 
 	GetLetterWidth(hdc);
 	DefineNewBoundaries(hdc, textRect);
 	//DrawCurrentPosition(hdc);
 	DrawTimer(hdc, clientRect);
+	//DrawSpaceError(hdc, textRect);
 	DrawLetters(hdc, textRect);
 
 	//SelectObject(hdc, oldFont);
@@ -30,7 +31,7 @@ void View::TestingUpdate(HDC hdc, RECT clientRect)
 
 void View::ResultUpdate(HDC hdc, RECT clientRect)
 {
-	FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+	//FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
 
 }
 
@@ -137,11 +138,18 @@ void View::DrawLetters(HDC hdc, RECT textRect)
 			{
 				if (!letters[position + i].GetIsCorrect())
 				{
-					SetTextColor(hdc, RGB(255, 0, 0));
-					/*if (letters[i].GetLetter() == ' ')
+					if (letters[position + i].GetLetter() == ' ')
 					{
+						RECT spaceErrorRect;
+						spaceErrorRect.left = textRect.left + letterWidth * i;
+						spaceErrorRect.top = textRect.top + row * rowsHeight + rowsHeight * 0.9;
+						spaceErrorRect.right = spaceErrorRect.left + letterWidth;
+						spaceErrorRect.bottom = textRect.top + (row + 1) * rowsHeight;
 
-					}*/
+						DrawSpaceError(hdc, spaceErrorRect);
+						//continue;
+					}
+					else SetTextColor(hdc, RGB(255, 0, 0));
 				}
 				else
 				{
@@ -186,7 +194,7 @@ void View::DrawTimer(HDC hdc, RECT clientRect)
 	int iAvailableTime = typing->CheckTime();
 	double dAvailableTime = typing->CheckTime();
 	int lineTimerLength = partWidth * dAvailableTime;
-	
+
 	int curGBValue = (255 * (dAvailableTime / timeForTesting));
 
 	std::wstring timeWStr = std::to_wstring(iAvailableTime);
@@ -197,10 +205,21 @@ void View::DrawTimer(HDC hdc, RECT clientRect)
 	TextOut(hdc, numberTimerX, numberTimerY, timeWStr.c_str(), GetNumberLength(iAvailableTime) + 1);
 
 	hBrush = CreateSolidBrush(RGB(255, curGBValue, curGBValue));
+	HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, hBrush);
 	SelectObject(hdc, hBrush);
 	Rectangle(hdc, clientRect.left, clientRect.top, lineTimerLength, lineTimerWidth);
+	SelectObject(hdc, hOldBrush);
+	DeleteObject(hBrush);
+}
 
-
+void View::DrawSpaceError(HDC hdc, RECT spaceErrorRect)
+{
+	hBrush = CreateSolidBrush(RGB(255, 0, 0));
+	HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, hBrush);
+	SelectObject(hdc, hBrush);
+	Rectangle(hdc, spaceErrorRect.left, spaceErrorRect.top, spaceErrorRect.right, spaceErrorRect.bottom);
+	SelectObject(hdc, hOldBrush);
+	DeleteObject(hBrush);
 }
 
 void View::GetLetterWidth(HDC hdc)
