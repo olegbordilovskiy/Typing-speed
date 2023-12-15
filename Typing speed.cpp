@@ -67,21 +67,6 @@ void AsyncRequestForView(HWND hwnd) {
 	th.detach();
 }
 
-//void ViewThread(HWND hwnd)
-//{
-//	while (true)
-//	{
-//		InvalidateRect(hwnd, NULL, TRUE);
-//		std::this_thread::sleep_for(std::chrono::milliseconds(16));
-//	}
-//}
-//
-//void AsyncView(HWND hwnd) {
-//
-//	std::thread thr(ViewThread, hwnd);
-//	thr.detach();
-//}
-
 RECT GetNewTextRect(RECT clientRect)
 {
 	RECT newTextRect;
@@ -101,16 +86,10 @@ void DoubleBuffering(HWND hwnd, ViewUpdate updateFunction, View& view)
 	HBITMAP hBitmap = CreateCompatibleBitmap(hdc, clientRect.right, clientRect.bottom);
 	SelectObject(hdcBuffer, hBitmap);
 
-	// Рисование в hdcBuffer
-	//FillRect(hdcBuffer, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 5));
-	//view.TestingUpdate(hdcBuffer, clientRect);
-	//(view.*pViewUpdateFunc)(hdcBuffer, clientRect);
 	(view.*updateFunction)(hdcBuffer, clientRect);
 
-	// Копирование изображения из hdcBuffer в hdc
 	BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, hdcBuffer, 0, 0, SRCCOPY);
 
-	// Очистка ресурсов
 	DeleteObject(hBitmap);
 	DeleteDC(hdcBuffer);
 
@@ -189,7 +168,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	}
 
 	appCondition = preTest;
+
 	InitializeCriticalSection(&criticalSection);
+
 	typing = new Typing();
 	view = new View(typing);
 
@@ -263,7 +244,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_SIZE:
 	{
 		GetClientRect(hwnd, &clientRect);
-		textRect = GetNewTextRect(clientRect);
+		//textRect = GetNewTextRect(clientRect);
 		//FontResize(font, textRect);
 		InvalidateRect(hwnd, NULL, TRUE);
 		return 0;

@@ -16,6 +16,7 @@ private:
 	void GetLetterWidth(HDC hdc);
 	int GetNumberLength(int number);
 	void SetNewStartPosition(HDC hdc, RECT textRect);
+	void SetNewFontSize(RECT clientRect);
 	void DefineNewBoundaries(HDC hdc, RECT textRect);
 	RECT GetNewTextRect(RECT clientRect);
 	std::wstring CharToWstring(char ch);
@@ -25,6 +26,7 @@ private:
 	int endPosition;
 	int letterWidth;
 	int rowCount;
+	int fontSize;
 	Typing* typing;
 	HFONT font;
 	RECT clientRect;

@@ -5,7 +5,7 @@ Typing::Typing()
 {
 	ResourceLoading();
 	//currentInd = 150;
-	timeForTesting = 45;
+	timeForTesting = 20;
 }
 
 void Typing::ChangeState(char letter)
@@ -80,7 +80,7 @@ void Typing::ResourceLoading()
 	}
 	textFile.close();
 
-	//std::shuffle(words.begin(), words.end(), rng);
+	std::shuffle(words.begin(), words.end(), rng);
 
 	char letterSymbol;
 
