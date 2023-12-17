@@ -19,7 +19,10 @@ public:
 	void SetTimeForTesting(int seconds);
 	int GetTimeForTesting();
 	void StartTyping();
-	double CheckTime();
+	float CheckTime();
+	int GetWPM();
+	int GetAccuracy();
+	int GetTotalTime();
 	std::vector<Letter> GetLetters();
 private:
 	int timeForTesting;

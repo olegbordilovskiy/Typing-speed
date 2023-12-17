@@ -25,15 +25,67 @@ typedef void (View::* ViewUpdate)(HDC hdc, RECT clientRect);
 Typing* typing;
 View* view;
 
+bool runCheckTime = false;
+bool runAsyncRequestForView = false;
+bool isThisFirstTest = true;
+
 
 enum ApplicationConditions
 {
-	preTest,
-	Testing,
-	Result
+	preparation,
+	inputWaiting,
+	startTesting,
+	testing,
+	restart,
+	result
 };
 
 ApplicationConditions appCondition;
+
+
+void AsyncApplicationCondition()
+{
+	std::thread th([&]()
+		{
+			while (true) {
+				EnterCriticalSection(&criticalSection);
+				switch (appCondition)
+				{
+				case preparation:
+				{
+					typing = new Typing();
+					view = new View(typing);
+				}
+				appCondition = inputWaiting;
+				break;
+
+				case startTesting:
+				{
+					runCheckTime = true;
+					typing->StartTyping();
+					appCondition = testing;
+					break;
+				}
+				case result:
+					break;
+
+				case restart:
+
+					runCheckTime = false;
+					delete typing;
+					delete view;
+					isThisFirstTest = false;
+					appCondition = preparation;
+
+					break;
+				default:
+					break;
+				}
+				LeaveCriticalSection(&criticalSection);
+			}
+		});
+	th.detach();
+}
 
 void AsyncCheckTimeForTestingThread()
 {
@@ -42,10 +94,10 @@ void AsyncCheckTimeForTestingThread()
 			while (true)
 			{
 				EnterCriticalSection(&criticalSection);
-				if (appCondition == Testing) {
+				if (runCheckTime && appCondition == testing) {
 					if (typing->CheckTime() == 0)
 					{
-						appCondition = Result;
+						appCondition = result;
 					}
 				}
 				LeaveCriticalSection(&criticalSection);
@@ -96,36 +148,6 @@ void DoubleBuffering(HWND hwnd, ViewUpdate updateFunction, View& view)
 	EndPaint(hwnd, &ps);
 }
 
-//void FontResize(HFONT& font, RECT drawingArea)
-//{
-//	WORD size = 0;
-//	WORD fontSize = 0;
-//
-//	if (drawingArea.bottom - drawingArea.top > drawingArea.right - drawingArea.left)
-//	{
-//		size = (drawingArea.bottom - drawingArea.top) / 3;
-//		fontSize = size % 72;
-//	}
-//	else
-//	{
-//		size = drawingArea.right - drawingArea.left;
-//		fontSize = size % 36;
-//	}
-//
-//	WORD totalSize = drawingArea.bottom - drawingArea.top;
-//	WORD rowHeight = totalSize / 3;
-//	WORD fontSize = rowHeight % 72;
-//	LOGFONT lf;
-//	memset(&lf, 0, sizeof(LOGFONT)); // Инициализация
-//	lf.lfHeight = fontSize; // Размер шрифта
-//	lf.lfWeight = FW_NORMAL; // Вес шрифта
-//	lf.lfItalic = FALSE; // Курсив
-//	lf.lfUnderline = FALSE; // Подчеркивание
-//	lf.lfCharSet = DEFAULT_CHARSET; // Набор символов
-//	wcscpy_s(lf.lfFaceName, L"Tahoma"); // Имя шрифта
-//	font = CreateFontIndirect(&lf); // Создание шрифта
-//
-
 void DrawRectangle(HDC hdc)
 {
 	HBRUSH brush = CreateSolidBrush(RGB(50, 50, 50));
@@ -136,6 +158,7 @@ void DrawRectangle(HDC hdc)
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
+
 	const wchar_t CLASS_NAME[] = L"Window Class";
 
 	WNDCLASSEX wcex = { };
@@ -167,17 +190,18 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		return 0;
 	}
 
-	appCondition = preTest;
+	appCondition = preparation;
 
 	InitializeCriticalSection(&criticalSection);
 
-	typing = new Typing();
-	view = new View(typing);
+	//typing = new Typing();
+	//view = new View(typing);
 
 	GetClientRect(hwnd, &clientRect);
 
 	ShowWindow(hwnd, SW_MAXIMIZE);
 
+	AsyncApplicationCondition();
 	AsyncRequestForView(hwnd);
 	AsyncCheckTimeForTestingThread();
 
@@ -201,13 +225,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		EnterCriticalSection(&criticalSection);
 		switch (appCondition)
 		{
-		case preTest:
+		case inputWaiting:
+			DoubleBuffering(hwnd, &View::PreparationUpdate, *view);
+			break;
+		case testing:
 			DoubleBuffering(hwnd, &View::TestingUpdate, *view);
 			break;
-		case Testing:
-			DoubleBuffering(hwnd, &View::TestingUpdate, *view);
-			break;
-		case Result:
+		case result:
 			DoubleBuffering(hwnd, &View::ResultUpdate, *view);
 			break;
 		default:
@@ -224,16 +248,23 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		switch (appCondition)
 		{
-		case preTest:
-			appCondition = Testing;
-			typing->StartTyping();
+		case inputWaiting:
 
-		case Testing:
+			appCondition = startTesting;
+
+		case testing:
 			lowerCase = tolower(wParam);
+
+			if (lowerCase == '\r')
+			{
+				appCondition = restart;
+				break;
+			}
+
 			typing->ChangeState(lowerCase);
 			view->SetCurrentPosition(typing->GetCurrentInd());
 			break;
-		case Result:
+		case result:
 			break;
 		default:
 			break;
@@ -244,8 +275,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_SIZE:
 	{
 		GetClientRect(hwnd, &clientRect);
-		//textRect = GetNewTextRect(clientRect);
-		//FontResize(font, textRect);
 		InvalidateRect(hwnd, NULL, TRUE);
 		return 0;
 	}

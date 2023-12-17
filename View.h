@@ -7,20 +7,12 @@
 class View
 {
 private:
-	int HowManyLettersCanBeContained(RECT textRect, int startLetterIndex, bool direction);
-	int GetWordSize(int position, bool direction);
-	void FontLoading();
-	void DrawLetters(HDC hdc, RECT clientRect);
-	void DrawTimer(HDC hdc, RECT clientRect);
-	void DrawSpaceError(HDC hdc, RECT spaceErrorRect);
-	void SetLetterWidth(HDC hdc);
-	void SetLetterHeight(HDC hdc);
-	int GetNumberLength(int number);
-	void SetNewStartPosition(HDC hdc, RECT textRect);
-	void SetNewFontSize(RECT clientRect);
-	void DefineNewBoundaries(HDC hdc, RECT textRect);
-	RECT GetNewTextRect(RECT clientRect);
-	std::wstring CharToWstring(char ch);
+	enum fontSizeType
+	{
+		text,
+		results,
+		resultsLabels,
+	};
 
 	int startPosition;
 	int currentPosition;
@@ -29,14 +21,34 @@ private:
 	int letterHeight;
 	int rowCount;
 	int fontSize;
+	int resultsFontSize;
+
 	Typing* typing;
 	HFONT font;
 	RECT clientRect;
-	//PAINTSTRUCT ps;
 	HBRUSH hBrush;
+
+	int HowManyLettersCanBeContained(RECT textRect, int startLetterIndex, bool direction);
+	int GetWordSize(int position, bool direction);
+	void FontLoading();
+	void DrawLetters(HDC hdc, RECT clientRect);
+	void DrawTimer(HDC hdc, RECT clientRect);
+	void DrawResults(HDC hdc, RECT clientRect);
+	void DrawSpaceError(HDC hdc, RECT spaceErrorRect);
+	void SetLetterWidth(HDC hdc);
+	void SetLetterHeight(HDC hdc);
+	int GetNumberLength(int number);
+	void SetNewStartPosition(HDC hdc, RECT textRect);
+	void SetNewFontSize(RECT clientRect, fontSizeType type, HDC& hdc);
+	void DefineNewBoundaries(HDC hdc, RECT textRect);
+	double GetSpaceErrorLineHeight();
+	RECT GetNewTextRect(RECT clientRect);
+	RECT GetNewResultRect(RECT clientRect);
+	std::wstring CharToWstring(char ch);
 
 public:
 	View(Typing* typing);
+	void PreparationUpdate(HDC hdc, RECT clientRect);
 	void TestingUpdate(HDC hdc, RECT clientRect);
 	void ResultUpdate(HDC hdc, RECT clientRect);
 	void SetCurrentPosition(int currentInd);

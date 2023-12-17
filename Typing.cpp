@@ -4,7 +4,8 @@
 Typing::Typing()
 {
 	ResourceLoading();
-	timeForTesting = 200;
+	timeForTesting = 5;
+	currentInd = 0;
 }
 
 void Typing::ChangeState(char letter)
@@ -54,9 +55,36 @@ void Typing::StartTyping()
 	timer.StartTimer(timeForTesting);
 }
 
-double Typing::CheckTime()
+float Typing::CheckTime()
 {
 	return timer.GetAvailableTime();
+}
+
+int Typing::GetWPM()
+{
+	int passedTime = timer.GetTotalTime() - timer.GetAvailableTime();
+	double passedTimeMinutes = passedTime / 60.0;
+	if (passedTimeMinutes == 0.0) return 0;
+	int WPM = currentInd / (5 * passedTimeMinutes);
+	return WPM;
+}
+
+int Typing::GetAccuracy()
+{
+	int correctLetters = 0;
+
+	for (int i = 0; i < currentInd; i++)
+	{
+		if (letters[i].GetIsCorrect())
+			correctLetters++;
+	}
+	int accuracy = ((float)correctLetters / (float)currentInd) * 100;
+	return accuracy;
+}
+
+int Typing::GetTotalTime()
+{
+	return timer.GetTotalTime();
 }
 
 void Typing::ResourceLoading()
