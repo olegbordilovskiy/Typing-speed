@@ -12,9 +12,19 @@ private:
 		text,
 		results,
 		resultsLabels,
+		appCond,
+		chooseTime,
+		hotKeys,
+	};
+
+	enum appCondition
+	{
+		preparation,
+		result,
 	};
 
 	int startPosition;
+	int startTimerOption;
 	int currentPosition;
 	int endPosition;
 	int letterWidth;
@@ -32,9 +42,12 @@ private:
 	int GetWordSize(int position, bool direction);
 	void FontLoading();
 	void DrawLetters(HDC hdc, RECT clientRect);
+	void DrawAppCondition(HDC hdc, RECT clientRect, appCondition condition);
 	void DrawTimer(HDC hdc, RECT clientRect);
 	void DrawResults(HDC hdc, RECT clientRect);
+	void DrawChooseTime(HDC hdc, RECT clientRect, int seconds);
 	void DrawSpaceError(HDC hdc, RECT spaceErrorRect);
+	void DrawHotKeys(HDC hdc, RECT clientRect);
 	void SetLetterWidth(HDC hdc);
 	void SetLetterHeight(HDC hdc);
 	int GetNumberLength(int number);
@@ -42,15 +55,18 @@ private:
 	void SetNewFontSize(RECT clientRect, fontSizeType type, HDC& hdc);
 	void DefineNewBoundaries(HDC hdc, RECT textRect);
 	double GetSpaceErrorLineHeight();
+
 	RECT GetNewTextRect(RECT clientRect);
 	RECT GetNewResultRect(RECT clientRect);
 	std::wstring CharToWstring(char ch);
 
 public:
 	View(Typing* typing);
-	void PreparationUpdate(HDC hdc, RECT clientRect);
-	void TestingUpdate(HDC hdc, RECT clientRect);
-	void ResultUpdate(HDC hdc, RECT clientRect);
+	void PreparationUpdate(HDC hdc, RECT clientRect, int seconds);
+	void TestingUpdate(HDC hdc, RECT clientRect, int seconds);
+	void ResultUpdate(HDC hdc, RECT clientRect, int seconds);
 	void SetCurrentPosition(int currentInd);
+	void SetStartTimerOption(int seconds);
+	RECT GetNewChooseTimeRect(RECT clientRect);
 };
 

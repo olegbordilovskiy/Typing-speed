@@ -12,17 +12,18 @@ View::View(Typing* typing)
 	rowCount = 3;
 }
 
-void View::PreparationUpdate(HDC hdc, RECT clientRect)
+void View::PreparationUpdate(HDC hdc, RECT clientRect, int seconds)
 {
 	FillRect(hdc, &clientRect, (HBRUSH)(COLOR_WINDOW + 5));
 	SetLetterWidth(hdc);
 	SetLetterHeight(hdc);
+	DrawAppCondition(hdc, clientRect, preparation);
+	DrawChooseTime(hdc, clientRect,seconds);
+	DrawHotKeys(hdc, clientRect);
 	DrawLetters(hdc, clientRect);
 }
-void View::TestingUpdate(HDC hdc, RECT clientRect)
+void View::TestingUpdate(HDC hdc, RECT clientRect, int seconds)
 {
-	//RECT textRect = GetNewTextRect(clientRect);
-	//HFONT oldFont = (HFONT)SelectObject(hdc, font);
 	FillRect(hdc, &clientRect, (HBRUSH)(COLOR_WINDOW + 5));
 
 	SetLetterWidth(hdc);
@@ -30,22 +31,20 @@ void View::TestingUpdate(HDC hdc, RECT clientRect)
 	DefineNewBoundaries(hdc, clientRect);
 
 	DrawTimer(hdc, clientRect);
-	//DrawSpaceError(hdc, textRect);
+	DrawChooseTime(hdc, clientRect, seconds);
+	DrawHotKeys(hdc, clientRect);
 	DrawLetters(hdc, clientRect);
-
-	//SelectObject(hdc, oldFont);
-	//DeleteObject(hBrush);
 }
 
-void View::ResultUpdate(HDC hdc, RECT clientRect)
+void View::ResultUpdate(HDC hdc, RECT clientRect, int seconds)
 {
-	//RECT resultRect = GetNewResultRect(clientRect);
 	FillRect(hdc, &clientRect, (HBRUSH)(COLOR_WINDOW + 5));
-	//fontSizeType type = results;
-	//SetNewFontSize(clientRect, results, hdc);
 	RECT resultRect = GetNewResultRect(clientRect);
 	//DrawSpaceError(hdc, resultRect);
+	DrawAppCondition(hdc, clientRect, result);
 	DrawResults(hdc, clientRect);
+	DrawHotKeys(hdc, clientRect);
+
 
 }
 
@@ -92,25 +91,15 @@ int View::GetWordSize(int position, bool direction)
 
 void View::FontLoading()
 {
-	//const wchar_t* fontPath = L"C:\\Users\\vanas\\OneDrive\\Рабочий стол\\3 курс\\СП\\Typing speed\\resources\\UbuntuMono-R.ttf";
-
-	//if (AddFontResource(fontPath) == 0)
-	//{
-	//	return;
-	//}
-
 	LOGFONT lf;
-	memset(&lf, 0, sizeof(LOGFONT)); // Инициализация
-	lf.lfHeight = fontSize; // Размер шрифта
-	lf.lfWeight = FW_NORMAL; // Вес шрифта
-	lf.lfItalic = FALSE; // Курсив
-	lf.lfUnderline = FALSE; // Подчеркивание
-	lf.lfCharSet = DEFAULT_CHARSET; // Набор символов
-	wcscpy_s(lf.lfFaceName, L"Consolas"); // Замените YourFontName на имя вашего шрифта
-
-	// Используйте полный путь к файлу шрифта
-	//wcscpy_s(lf.lfFaceName, fontPath);
-	font = CreateFontIndirect(&lf); // Создание шрифта
+	memset(&lf, 0, sizeof(LOGFONT)); 
+	lf.lfHeight = fontSize; 
+	lf.lfWeight = FW_NORMAL; 
+	lf.lfItalic = FALSE; 
+	lf.lfUnderline = FALSE; 
+	lf.lfCharSet = DEFAULT_CHARSET; 
+	wcscpy_s(lf.lfFaceName, L"Consolas"); 
+	font = CreateFontIndirect(&lf); 
 }
 
 void View::SetNewFontSize(RECT clientRect, fontSizeType type, HDC& hdc)
@@ -132,11 +121,19 @@ void View::SetNewFontSize(RECT clientRect, fontSizeType type, HDC& hdc)
 	case resultsLabels:
 		fontSizeCoef = 20;
 		break;
+	case appCond:
+		fontSizeCoef = 20;
+		break;
+	case chooseTime:
+		fontSizeCoef = 30;
+		break;
+	case hotKeys:
+		fontSizeCoef = 40;
+		break;
 	}
 
 	fontSize = smallestSide / fontSizeCoef;
 
-	// Измените размер текущего шрифта
 	LOGFONT lf;
 	GetObject(font, sizeof(LOGFONT), &lf);
 	lf.lfHeight = fontSize;
@@ -144,7 +141,6 @@ void View::SetNewFontSize(RECT clientRect, fontSizeType type, HDC& hdc)
 	font = CreateFontIndirect(&lf);
 	SelectObject(hdc, font);
 }
-
 
 RECT View::GetNewTextRect(RECT clientRect)
 {
@@ -170,6 +166,26 @@ RECT View::GetNewResultRect(RECT clientRect)
 	return newResultRect;
 }
 
+RECT View::GetNewChooseTimeRect(RECT clientRect)
+{
+	int clientRectWidth = clientRect.right - clientRect.left;
+	int clientRectHeight = clientRect.bottom - clientRect.top;
+
+	RECT newChooseTimeRect;
+	newChooseTimeRect.right = clientRectWidth - clientRectWidth * 0.07;
+	if (clientRectWidth > 600)
+	{
+		newChooseTimeRect.left = newChooseTimeRect.right - 180;
+	}
+	else
+	{
+		newChooseTimeRect.left = clientRectWidth - clientRectWidth / 2.8;
+	}
+	newChooseTimeRect.top = clientRect.top + clientRectHeight * 0.10 ;
+	newChooseTimeRect.bottom = clientRect.top + clientRectHeight * 0.15;
+
+	return newChooseTimeRect;
+}
 
 std::wstring View::CharToWstring(char ch)
 {
@@ -239,7 +255,7 @@ void View::DrawLetters(HDC hdc, RECT clientRect)
 				RECT spaceErrorRect;
 				double spaceErrorLineHeight = GetSpaceErrorLineHeight();
 				spaceErrorRect.left = textRect.left + letterWidth * i;
- 				spaceErrorRect.top = textRect.top + row * rowsHeight + letterHeight * spaceErrorLineHeight;
+				spaceErrorRect.top = textRect.top + row * rowsHeight + letterHeight * spaceErrorLineHeight;
 				spaceErrorRect.right = spaceErrorRect.left + letterWidth;
 				spaceErrorRect.bottom = textRect.top + row * rowsHeight + letterHeight;
 				DrawSpaceError(hdc, spaceErrorRect);
@@ -251,15 +267,39 @@ void View::DrawLetters(HDC hdc, RECT clientRect)
 	endPosition = position - 1;
 }
 
+void View::DrawAppCondition(HDC hdc, RECT clientRect, appCondition condition)
+{
+	int clientRectWidth = clientRect.right - clientRect.left;
+	int clientRectHeight = clientRect.bottom - clientRect.top;
+	int appConditionX = clientRectWidth / 8;
+	int appConditionY = clientRectHeight / 12;
+
+	std::wstring conditionWSTR;
+	if (condition == preparation)
+	{
+		conditionWSTR = L"Start typing";
+	}
+	else
+	{
+		conditionWSTR = L"Result";
+	}
+
+	SetNewFontSize(clientRect, appCond, hdc);
+	SetBkColor(hdc, RGB(0, 0, 0));
+	SetTextColor(hdc, RGB(255, 255, 255));
+	TextOut(hdc, appConditionX, appConditionY, conditionWSTR.c_str(), conditionWSTR.size());
+
+}
+
 void View::DrawTimer(HDC hdc, RECT clientRect)
 {
 	int clientRectWidth = clientRect.right - clientRect.left;
 	int clientRectHeight = clientRect.bottom - clientRect.top;
-	int numberTimerX = clientRectWidth / 7; // 2.1
-	int numberTimerY = clientRectHeight / 10; // 5
+	int numberTimerX = clientRectWidth / 8; // 2.1
+	int numberTimerY = clientRectHeight / 12; // 5
 	int lineTimerWidth = clientRectHeight * 0.02;
 	int timeForTesting = typing->GetTimeForTesting();
-	float partWidth = (float)clientRectWidth / timeForTesting;
+	double partWidth = (double)clientRectWidth / timeForTesting;
 	int partGBValue = 255 / clientRectWidth;
 
 	int iAvailableTime = typing->CheckTime();
@@ -268,12 +308,13 @@ void View::DrawTimer(HDC hdc, RECT clientRect)
 
 	int curGBValue = (255 * (dAvailableTime / timeForTesting));
 
-	std::wstring timeWStr = std::to_wstring(iAvailableTime);
-	timeWStr += L"s";
+	std::wstring timeWSTR = std::to_wstring(iAvailableTime + 1);
+	timeWSTR += L"s";
 
+	SetNewFontSize(clientRect, appCond, hdc);
 	SetBkColor(hdc, RGB(0, 0, 0));
 	SetTextColor(hdc, RGB(255, 255, 255));
-	TextOut(hdc, numberTimerX, numberTimerY, timeWStr.c_str(), GetNumberLength(iAvailableTime) + 1);
+	TextOut(hdc, numberTimerX, numberTimerY, timeWSTR.c_str(), GetNumberLength(iAvailableTime) + 1);
 
 	hBrush = CreateSolidBrush(RGB(255, curGBValue, curGBValue));
 	HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, hBrush);
@@ -310,9 +351,9 @@ void View::DrawResults(HDC hdc, RECT clientRect)
 
 		RECT textRect;
 		textRect.left = resultRect.left + column * oneResultWidth;
-		textRect.top = resultRect.top - legendHeight; 
+		textRect.top = resultRect.top - legendHeight / 2;
 		textRect.right = resultRect.left + (column + 1) * oneResultWidth;
-		textRect.bottom = resultRect.top; 
+		textRect.bottom = resultRect.top;
 
 		SetNewFontSize(clientRect, resultsLabels, hdc);
 		DrawText(hdc, label.c_str(), -1, &textRect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
@@ -324,6 +365,69 @@ void View::DrawResults(HDC hdc, RECT clientRect)
 		DrawText(hdc, resultWSTR.c_str(), -1, &textRect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
 	}
 }
+
+void View::DrawChooseTime(HDC hdc, RECT clientRect, int seconds)
+{
+	RECT chooseTimeRect = GetNewChooseTimeRect(clientRect);
+	int oneChooseTimeWidth = (chooseTimeRect.right - chooseTimeRect.left) / 4;
+
+	SetBkColor(hdc, RGB(0, 0, 0));
+
+	RECT timeLabelRect = chooseTimeRect;
+	timeLabelRect.bottom = chooseTimeRect.top;
+	timeLabelRect.top -= 30; // 
+	SetNewFontSize(clientRect, chooseTime, hdc);
+	DrawText(hdc, L"time", -1, &timeLabelRect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+
+	std::vector<int> timeOptions = { 15, 30, 60, 120 };
+
+	for (int time = 0; time < 4; time++)
+	{
+		std::wstring timeWSTR = std::to_wstring(timeOptions[time]);
+
+		RECT chooseOneTimeRect;
+		chooseOneTimeRect.left = chooseTimeRect.left + time * oneChooseTimeWidth;
+		chooseOneTimeRect.top = chooseTimeRect.top;
+		chooseOneTimeRect.right = chooseTimeRect.left + (time + 1) * oneChooseTimeWidth;
+		chooseOneTimeRect.bottom = chooseTimeRect.bottom;
+
+		if (seconds == timeOptions[time])
+		{
+			SetTextColor(hdc, RGB(255, 255, 255));
+		}
+		else
+		{
+			SetTextColor(hdc, RGB(40, 40, 40));
+		}
+
+		DrawText(hdc, timeWSTR.c_str(), -1, &chooseOneTimeRect, DT_SINGLELINE | DT_VCENTER);
+	}
+}
+
+
+void View::DrawHotKeys(HDC hdc, RECT clientRect)
+{
+	RECT enterRect;
+	enterRect.left = clientRect.right - clientRect.right * 0.57;
+	enterRect.top = clientRect.bottom - clientRect.bottom * 0.10;
+	enterRect.right = clientRect.right - clientRect.right * 0.50;
+	enterRect.bottom = clientRect.bottom - clientRect.bottom * 0.05;
+
+	RECT restartRect;
+	restartRect.left = enterRect.right;
+	restartRect.top = enterRect.top;
+	restartRect.right = restartRect.left+150; 
+	restartRect.bottom = enterRect.bottom;
+
+	SetNewFontSize(clientRect, hotKeys, hdc);
+
+	SetTextColor(hdc, RGB(255, 255, 255));
+
+	DrawEdge(hdc, &enterRect, EDGE_BUMP, BF_RECT);
+	DrawText(hdc, L"Enter", -1, &enterRect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+	DrawText(hdc, L" - Restart", -1, &restartRect, DT_SINGLELINE | DT_VCENTER);
+}
+
 
 
 
@@ -367,6 +471,11 @@ int View::GetNumberLength(int number)
 	std::string numberString = std::to_string(number);
 	int length = static_cast<int>(numberString.length());
 	return length;
+}
+
+void View::SetStartTimerOption(int seconds)
+{
+	startTimerOption = seconds;
 }
 
 void View::SetCurrentPosition(int currentInd)

@@ -3,7 +3,6 @@
 Timer::Timer()
 {
 	timerRunning = false;
-	totalTime = 5;
 }
 
 void Timer::StartTimer(int seconds)

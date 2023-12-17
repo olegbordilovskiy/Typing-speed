@@ -20,14 +20,14 @@ RECT textRect;
 PAINTSTRUCT ps;
 CRITICAL_SECTION criticalSection;
 
-typedef void (View::* ViewUpdate)(HDC hdc, RECT clientRect);
+typedef void (View::* ViewUpdate)(HDC hdc, RECT clientRect, int seconds);
 
 Typing* typing;
 View* view;
 
 bool runCheckTime = false;
 bool runAsyncRequestForView = false;
-bool isThisFirstTest = true;
+int currentTimeOptional = 15;
 
 
 enum ApplicationConditions
@@ -56,6 +56,10 @@ void AsyncApplicationCondition()
 					typing = new Typing();
 					view = new View(typing);
 				}
+
+				view->SetStartTimerOption(currentTimeOptional);
+				typing->SetTimeForTesting(currentTimeOptional);
+
 				appCondition = inputWaiting;
 				break;
 
@@ -74,7 +78,6 @@ void AsyncApplicationCondition()
 					runCheckTime = false;
 					delete typing;
 					delete view;
-					isThisFirstTest = false;
 					appCondition = preparation;
 
 					break;
@@ -82,6 +85,7 @@ void AsyncApplicationCondition()
 					break;
 				}
 				LeaveCriticalSection(&criticalSection);
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			}
 		});
 	th.detach();
@@ -138,7 +142,7 @@ void DoubleBuffering(HWND hwnd, ViewUpdate updateFunction, View& view)
 	HBITMAP hBitmap = CreateCompatibleBitmap(hdc, clientRect.right, clientRect.bottom);
 	SelectObject(hdcBuffer, hBitmap);
 
-	(view.*updateFunction)(hdcBuffer, clientRect);
+	(view.*updateFunction)(hdcBuffer, clientRect, currentTimeOptional);
 
 	BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, hdcBuffer, 0, 0, SRCCOPY);
 
@@ -193,9 +197,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	appCondition = preparation;
 
 	InitializeCriticalSection(&criticalSection);
-
-	//typing = new Typing();
-	//view = new View(typing);
 
 	GetClientRect(hwnd, &clientRect);
 
@@ -253,23 +254,62 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			appCondition = startTesting;
 
 		case testing:
-			lowerCase = tolower(wParam);
+			lowerCase = tolower((char)wParam);
 
 			if (lowerCase == '\r')
 			{
 				appCondition = restart;
 				break;
 			}
-
-			typing->ChangeState(lowerCase);
-			view->SetCurrentPosition(typing->GetCurrentInd());
+			
+			if (IsCharAlphaNumeric(lowerCase) || lowerCase == ' ' || lowerCase == '\b')
+			{
+				typing->ChangeState(lowerCase);
+				view->SetCurrentPosition(typing->GetCurrentInd());
+			}
 			break;
 		case result:
+			lowerCase = tolower(wParam);
+			if (lowerCase == '\r')
+			{
+				appCondition = restart;
+				break;
+			}
 			break;
 		default:
 			break;
 		}
 		LeaveCriticalSection(&criticalSection);
+	}
+
+	case WM_LBUTTONDOWN:
+	{
+		if (appCondition == inputWaiting || appCondition == testing)
+		{
+			int mouseX = GET_X_LPARAM(lParam);
+			int mouseY = GET_Y_LPARAM(lParam);
+
+			RECT chooseTimeRect = view->GetNewChooseTimeRect(clientRect);
+			std::vector<int> timeOptions = { 15, 30, 60, 120 };
+			int oneTimeWidth = (chooseTimeRect.right - chooseTimeRect.left) / 4;
+
+			for (int time = 0; time < 4; time++) {
+
+				RECT currentTimeRect;
+				currentTimeRect.left = chooseTimeRect.left + time * oneTimeWidth;
+				currentTimeRect.top = chooseTimeRect.top;
+				currentTimeRect.right = chooseTimeRect.left + (time + 1) * oneTimeWidth;
+				currentTimeRect.bottom = chooseTimeRect.bottom;
+
+				if (PtInRect(&currentTimeRect, { mouseX, mouseY }))
+				{
+
+					currentTimeOptional = timeOptions[time];
+				}
+			}
+			
+		}
+		return 0;
 	}
 
 	case WM_SIZE:

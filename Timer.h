@@ -8,7 +8,6 @@ public:
 	void StartTimer(int seconds);
 	float GetAvailableTime();
 	int GetTotalTime();
-	bool IsTimerRunning();
 private:
 	std::chrono::time_point<std::chrono::steady_clock> startTime;
 	int totalTime;

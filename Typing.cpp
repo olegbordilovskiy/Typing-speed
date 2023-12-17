@@ -4,7 +4,7 @@
 Typing::Typing()
 {
 	ResourceLoading();
-	timeForTesting = 5;
+	timeForTesting = 15;
 	currentInd = 0;
 }
 
@@ -50,6 +50,11 @@ std::vector<Letter> Typing::GetLetters()
 	return letters;
 }
 
+//const int* Typing::GetTimeOptionsArray()
+//{
+//	return timeOptions;
+//}
+
 void Typing::StartTyping()
 {
 	timer.StartTimer(timeForTesting);
@@ -73,11 +78,17 @@ int Typing::GetAccuracy()
 {
 	int correctLetters = 0;
 
+	if (currentInd == 0)
+	{
+		return 0;
+	}
+
 	for (int i = 0; i < currentInd; i++)
 	{
 		if (letters[i].GetIsCorrect())
 			correctLetters++;
 	}
+
 	int accuracy = ((float)correctLetters / (float)currentInd) * 100;
 	return accuracy;
 }
