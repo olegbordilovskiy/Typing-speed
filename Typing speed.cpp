@@ -20,14 +20,14 @@ RECT textRect;
 PAINTSTRUCT ps;
 CRITICAL_SECTION criticalSection;
 
-typedef void (View::* ViewUpdate)(HDC hdc, RECT clientRect, int seconds);
+typedef void (View::* ViewUpdate)(HDC hdc, RECT clientRect);
 
 Typing* typing;
 View* view;
 
 bool runCheckTime = false;
 bool runAsyncRequestForView = false;
-int currentTimeOptional = 15;
+int currentTimeOption = 15;
 
 
 enum ApplicationConditions
@@ -57,8 +57,9 @@ void AsyncApplicationCondition()
 					view = new View(typing);
 				}
 
-				view->SetStartTimerOption(currentTimeOptional);
-				typing->SetTimeForTesting(currentTimeOptional);
+				view->SetStartTimeOption(currentTimeOption);
+				view->SetCurrentTimeOption(currentTimeOption);
+				typing->SetTimeForTesting(currentTimeOption);
 
 				appCondition = inputWaiting;
 				break;
@@ -142,7 +143,7 @@ void DoubleBuffering(HWND hwnd, ViewUpdate updateFunction, View& view)
 	HBITMAP hBitmap = CreateCompatibleBitmap(hdc, clientRect.right, clientRect.bottom);
 	SelectObject(hdcBuffer, hBitmap);
 
-	(view.*updateFunction)(hdcBuffer, clientRect, currentTimeOptional);
+	(view.*updateFunction)(hdcBuffer, clientRect);
 
 	BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, hdcBuffer, 0, 0, SRCCOPY);
 
@@ -261,7 +262,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				appCondition = restart;
 				break;
 			}
-			
+
 			if (IsCharAlphaNumeric(lowerCase) || lowerCase == ' ' || lowerCase == '\b')
 			{
 				typing->ChangeState(lowerCase);
@@ -304,10 +305,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				if (PtInRect(&currentTimeRect, { mouseX, mouseY }))
 				{
 
-					currentTimeOptional = timeOptions[time];
+					currentTimeOption = timeOptions[time];
+					view->SetCurrentTimeOption(currentTimeOption);
 				}
 			}
-			
+
 		}
 		return 0;
 	}

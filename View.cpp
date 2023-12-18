@@ -10,19 +10,20 @@ View::View(Typing* typing)
 	currentPosition = 0;
 	endPosition = 0;
 	rowCount = 3;
+	currentTimeOption = 0;
 }
 
-void View::PreparationUpdate(HDC hdc, RECT clientRect, int seconds)
+void View::PreparationUpdate(HDC hdc, RECT clientRect)
 {
 	FillRect(hdc, &clientRect, (HBRUSH)(COLOR_WINDOW + 5));
 	SetLetterWidth(hdc);
 	SetLetterHeight(hdc);
 	DrawAppCondition(hdc, clientRect, preparation);
-	DrawChooseTime(hdc, clientRect,seconds);
+	DrawChooseTime(hdc, clientRect);
 	DrawHotKeys(hdc, clientRect);
 	DrawLetters(hdc, clientRect);
 }
-void View::TestingUpdate(HDC hdc, RECT clientRect, int seconds)
+void View::TestingUpdate(HDC hdc, RECT clientRect)
 {
 	FillRect(hdc, &clientRect, (HBRUSH)(COLOR_WINDOW + 5));
 
@@ -31,12 +32,12 @@ void View::TestingUpdate(HDC hdc, RECT clientRect, int seconds)
 	DefineNewBoundaries(hdc, clientRect);
 
 	DrawTimer(hdc, clientRect);
-	DrawChooseTime(hdc, clientRect, seconds);
+	DrawChooseTime(hdc, clientRect);
 	DrawHotKeys(hdc, clientRect);
 	DrawLetters(hdc, clientRect);
 }
 
-void View::ResultUpdate(HDC hdc, RECT clientRect, int seconds)
+void View::ResultUpdate(HDC hdc, RECT clientRect)
 {
 	FillRect(hdc, &clientRect, (HBRUSH)(COLOR_WINDOW + 5));
 	RECT resultRect = GetNewResultRect(clientRect);
@@ -64,8 +65,8 @@ int View::HowManyLettersCanBeContained(RECT textRect, int startLetterPosition, b
 	{
 		if (position < 0 || (availableDistance - GetWordSize(position, direction) < 0)) break;
 		occupiedDistance = GetWordSize(position, direction);
-		lettersAmount = occupiedDistance / letterWidth;
 		availableDistance -= occupiedDistance;
+		lettersAmount = occupiedDistance / letterWidth;
 		position += lettersAmount * sign;
 		totalLettersAmount += lettersAmount;
 	}
@@ -366,7 +367,7 @@ void View::DrawResults(HDC hdc, RECT clientRect)
 	}
 }
 
-void View::DrawChooseTime(HDC hdc, RECT clientRect, int seconds)
+void View::DrawChooseTime(HDC hdc, RECT clientRect)
 {
 	RECT chooseTimeRect = GetNewChooseTimeRect(clientRect);
 	int oneChooseTimeWidth = (chooseTimeRect.right - chooseTimeRect.left) / 4;
@@ -391,7 +392,7 @@ void View::DrawChooseTime(HDC hdc, RECT clientRect, int seconds)
 		chooseOneTimeRect.right = chooseTimeRect.left + (time + 1) * oneChooseTimeWidth;
 		chooseOneTimeRect.bottom = chooseTimeRect.bottom;
 
-		if (seconds == timeOptions[time])
+		if (currentTimeOption == timeOptions[time])
 		{
 			SetTextColor(hdc, RGB(255, 255, 255));
 		}
@@ -473,9 +474,14 @@ int View::GetNumberLength(int number)
 	return length;
 }
 
-void View::SetStartTimerOption(int seconds)
+void View::SetStartTimeOption(int seconds)
 {
 	startTimerOption = seconds;
+}
+
+void View::SetCurrentTimeOption(int seconds)
+{
+	currentTimeOption = seconds;
 }
 
 void View::SetCurrentPosition(int currentInd)

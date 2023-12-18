@@ -20,13 +20,11 @@ void Typing::ChangeState(char letter)
 	{
 		letters[currentInd].SetIsCorrect(false);
 		currentInd++;
-		return;
 	}
 	else
 	{
 		letters[currentInd].SetIsCorrect(true);
 		currentInd++;
-		return;
 	}
 }
 

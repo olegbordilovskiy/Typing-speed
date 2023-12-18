@@ -60,7 +60,6 @@ friend
 grab
 invite
 chief
-extra-small
 shocking
 truthful
 ashamed
@@ -459,7 +458,6 @@ invincible
 appreciate
 seat
 arrive
-ill-informed
 star
 voiceless
 terrify
@@ -575,7 +573,6 @@ lackadaisical
 general
 bath
 yoke
-extra-large
 scene
 close
 lace
@@ -779,7 +776,6 @@ capricious
 shivering
 touch
 talented
-long-term
 new
 perpetual
 wander
@@ -977,7 +973,6 @@ impartial
 wise
 delicate
 downtown
-black-and-white
 bag
 yarn
 fish
@@ -993,7 +988,6 @@ battle
 resonant
 amused
 complete
-well-off
 sun
 bomb
 noise

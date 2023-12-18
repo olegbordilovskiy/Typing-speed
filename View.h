@@ -32,6 +32,7 @@ private:
 	int rowCount;
 	int fontSize;
 	int resultsFontSize;
+	int currentTimeOption;
 
 	Typing* typing;
 	HFONT font;
@@ -45,7 +46,7 @@ private:
 	void DrawAppCondition(HDC hdc, RECT clientRect, appCondition condition);
 	void DrawTimer(HDC hdc, RECT clientRect);
 	void DrawResults(HDC hdc, RECT clientRect);
-	void DrawChooseTime(HDC hdc, RECT clientRect, int seconds);
+	void DrawChooseTime(HDC hdc, RECT clientRect);
 	void DrawSpaceError(HDC hdc, RECT spaceErrorRect);
 	void DrawHotKeys(HDC hdc, RECT clientRect);
 	void SetLetterWidth(HDC hdc);
@@ -62,11 +63,12 @@ private:
 
 public:
 	View(Typing* typing);
-	void PreparationUpdate(HDC hdc, RECT clientRect, int seconds);
-	void TestingUpdate(HDC hdc, RECT clientRect, int seconds);
-	void ResultUpdate(HDC hdc, RECT clientRect, int seconds);
+	void PreparationUpdate(HDC hdc, RECT clientRect);
+	void TestingUpdate(HDC hdc, RECT clientRect);
+	void ResultUpdate(HDC hdc, RECT clientRect);
 	void SetCurrentPosition(int currentInd);
-	void SetStartTimerOption(int seconds);
+	void SetStartTimeOption(int seconds);
+	void SetCurrentTimeOption(int seconds);
 	RECT GetNewChooseTimeRect(RECT clientRect);
 };
 
