@@ -38,6 +38,7 @@ private:
 	HFONT font;
 	RECT clientRect;
 	HBRUSH hBrush;
+	std::vector<int> timeOptions = { 15, 30, 60, 120 };
 
 	int HowManyLettersCanBeContained(RECT textRect, int startLetterIndex, bool direction);
 	int GetWordSize(int position, bool direction);

@@ -8,15 +8,15 @@ Typing::Typing()
 	currentInd = 0;
 }
 
-void Typing::ChangeState(char letter)
+void Typing::ChangeState(char symbol)
 {
-	if (letter == '\b')
+	if (symbol == '\b')
 	{
 		currentInd--;
 		if (currentInd < 0) currentInd = 0;
 		return;
 	}
-	if (letter != letters[currentInd].GetLetter())
+	if (symbol != letters[currentInd].GetLetter())
 	{
 		letters[currentInd].SetIsCorrect(false);
 		currentInd++;
@@ -47,11 +47,6 @@ std::vector<Letter> Typing::GetLetters()
 {
 	return letters;
 }
-
-//const int* Typing::GetTimeOptionsArray()
-//{
-//	return timeOptions;
-//}
 
 void Typing::StartTyping()
 {

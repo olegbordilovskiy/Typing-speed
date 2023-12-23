@@ -1,3 +1,4 @@
+
 #include "View.h"
 
 
@@ -27,7 +28,7 @@ void View::TestingUpdate(HDC hdc, RECT clientRect)
 {
 	FillRect(hdc, &clientRect, (HBRUSH)(COLOR_WINDOW + 5));
 
-	SetLetterWidth(hdc);
+	SetLetterWidth(hdc); 
 	SetLetterHeight(hdc);
 	DefineNewBoundaries(hdc, clientRect);
 
@@ -41,7 +42,6 @@ void View::ResultUpdate(HDC hdc, RECT clientRect)
 {
 	FillRect(hdc, &clientRect, (HBRUSH)(COLOR_WINDOW + 5));
 	RECT resultRect = GetNewResultRect(clientRect);
-	//DrawSpaceError(hdc, resultRect);
 	DrawAppCondition(hdc, clientRect, result);
 	DrawResults(hdc, clientRect);
 	DrawHotKeys(hdc, clientRect);
@@ -198,13 +198,11 @@ std::wstring View::CharToWstring(char ch)
 void View::DrawLetters(HDC hdc, RECT clientRect)
 {
 	RECT textRect = GetNewTextRect(clientRect);
-	//fontSizeType type = text;
 	SetNewFontSize(clientRect, text, hdc);
-	int rowsHeight = (textRect.bottom - textRect.top) / rowCount; // 0.7
+	int rowsHeight = (textRect.bottom - textRect.top) / rowCount; 
 	int position = startPosition;
 	bool isThisSpaceError = false;
 	std::vector<Letter> letters = typing->GetLetters();
-	//SetBkColor(hdc, RGB(0, 0, 0));
 
 	for (int row = 0; row < rowCount; row++)
 	{
@@ -373,14 +371,11 @@ void View::DrawChooseTime(HDC hdc, RECT clientRect)
 	int oneChooseTimeWidth = (chooseTimeRect.right - chooseTimeRect.left) / 4;
 
 	SetBkColor(hdc, RGB(0, 0, 0));
-
 	RECT timeLabelRect = chooseTimeRect;
 	timeLabelRect.bottom = chooseTimeRect.top;
-	timeLabelRect.top -= 30; // 
+	timeLabelRect.top -= 30; 
 	SetNewFontSize(clientRect, chooseTime, hdc);
 	DrawText(hdc, L"time", -1, &timeLabelRect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
-
-	std::vector<int> timeOptions = { 15, 30, 60, 120 };
 
 	for (int time = 0; time < 4; time++)
 	{

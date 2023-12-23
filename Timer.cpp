@@ -22,7 +22,7 @@ float Timer::GetAvailableTime()
 		return remainingTime;
 	}
 	else
-		return 0;
+		return -1;
 }
 
 int Timer::GetTotalTime()

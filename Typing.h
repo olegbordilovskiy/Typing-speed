@@ -14,7 +14,7 @@ class Typing
 {
 public:
 	Typing();
-	void ChangeState(char letter);
+	void ChangeState(char symbol);
 	int GetCurrentInd();
 	void SetTimeForTesting(int seconds);
 	int GetTimeForTesting();

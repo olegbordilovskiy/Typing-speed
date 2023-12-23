@@ -13,22 +13,21 @@
 using namespace std;
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-RECT GetNewTextRect(RECT clientRect);
+typedef void (View::* ViewUpdate)(HDC hdc, RECT clientRect);
 
 RECT clientRect;
-RECT textRect;
 PAINTSTRUCT ps;
 CRITICAL_SECTION criticalSection;
 
-typedef void (View::* ViewUpdate)(HDC hdc, RECT clientRect);
+const int FPS_120 = 8;
+const int DELAY_FOR_REST = 10;
 
 Typing* typing;
 View* view;
 
 bool runCheckTime = false;
-bool runAsyncRequestForView = false;
+bool runAppConditions = false;
 int currentTimeOption = 15;
-
 
 enum ApplicationConditions
 {
@@ -37,56 +36,61 @@ enum ApplicationConditions
 	startTesting,
 	testing,
 	restart,
-	result
+	result,
+	final
 };
 
 ApplicationConditions appCondition;
-
 
 void AsyncApplicationCondition()
 {
 	std::thread th([&]()
 		{
 			while (true) {
-				EnterCriticalSection(&criticalSection);
-				switch (appCondition)
-				{
-				case preparation:
-				{
-					typing = new Typing();
-					view = new View(typing);
-				}
+				if (runAppConditions) {
+					EnterCriticalSection(&criticalSection);
 
-				view->SetStartTimeOption(currentTimeOption);
-				view->SetCurrentTimeOption(currentTimeOption);
-				typing->SetTimeForTesting(currentTimeOption);
+					switch (appCondition)
+					{
+					case preparation:
+					{
+						typing = new Typing();
+						view = new View(typing);
+					}
 
-				appCondition = inputWaiting;
-				break;
+					view->SetStartTimeOption(currentTimeOption);
+					view->SetCurrentTimeOption(currentTimeOption);
+					typing->SetTimeForTesting(currentTimeOption);
 
-				case startTesting:
-				{
-					runCheckTime = true;
-					typing->StartTyping();
-					appCondition = testing;
-					break;
-				}
-				case result:
+					appCondition = inputWaiting;
 					break;
 
-				case restart:
+					case startTesting:
+					{
+						runCheckTime = true;
+						typing->StartTyping();
+						appCondition = testing;
+						break;
+					}
 
-					runCheckTime = false;
-					delete typing;
-					delete view;
-					appCondition = preparation;
+					case restart:
 
-					break;
-				default:
-					break;
+						runCheckTime = false;
+						delete typing;
+						delete view;
+						appCondition = preparation;
+
+						break;
+					case final:
+						runCheckTime = false;
+						delete typing;
+						delete view;
+					default:
+						break;
+					}
 				}
 				LeaveCriticalSection(&criticalSection);
-				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+				std::this_thread::sleep_for(std::chrono::milliseconds(DELAY_FOR_REST));
 			}
 		});
 	th.detach();
@@ -98,15 +102,17 @@ void AsyncCheckTimeForTestingThread()
 		{
 			while (true)
 			{
-				EnterCriticalSection(&criticalSection);
-				if (runCheckTime && appCondition == testing) {
-					if (typing->CheckTime() == 0)
-					{
-						appCondition = result;
+				if (runCheckTime) {
+					EnterCriticalSection(&criticalSection);
+					if (appCondition == testing) {
+						if (typing->CheckTime() == 0)
+						{
+							appCondition = result;
+						}
 					}
+					LeaveCriticalSection(&criticalSection);
 				}
-				LeaveCriticalSection(&criticalSection);
-				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+				std::this_thread::sleep_for(std::chrono::milliseconds(DELAY_FOR_REST));
 			}
 		});
 	th.detach();
@@ -118,22 +124,10 @@ void AsyncRequestForView(HWND hwnd) {
 		while (true)
 		{
 			InvalidateRect(hwnd, NULL, true);
-			std::this_thread::sleep_for(std::chrono::milliseconds(8));
+			std::this_thread::sleep_for(std::chrono::milliseconds(FPS_120));
 		}
 		});
 	th.detach();
-}
-
-RECT GetNewTextRect(RECT clientRect)
-{
-	RECT newTextRect;
-	float coefX = 1.2;
-	float coefY = 1.6;
-	newTextRect.left = clientRect.right - clientRect.right / coefX;
-	newTextRect.top = clientRect.bottom - clientRect.bottom / coefY;
-	newTextRect.right = clientRect.right / coefX;
-	newTextRect.bottom = clientRect.bottom / coefY;
-	return newTextRect;
 }
 
 void DoubleBuffering(HWND hwnd, ViewUpdate updateFunction, View& view)
@@ -153,14 +147,6 @@ void DoubleBuffering(HWND hwnd, ViewUpdate updateFunction, View& view)
 	EndPaint(hwnd, &ps);
 }
 
-void DrawRectangle(HDC hdc)
-{
-	HBRUSH brush = CreateSolidBrush(RGB(50, 50, 50));
-	SelectObject(hdc, brush);
-	Rectangle(hdc, textRect.left, textRect.top, textRect.right, textRect.bottom);
-	DeleteObject(brush);
-}
-
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
 
@@ -176,18 +162,17 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	RegisterClassEx(&wcex);
 
 	HWND hwnd = CreateWindowEx(
-		0,                              // Optional window styles.
-		CLASS_NAME,                     // Window class
-		L"Typing speed",				// Window text
-		WS_OVERLAPPEDWINDOW,            // Window style
+		0,
+		CLASS_NAME,
+		L"Typing speed",
+		WS_OVERLAPPEDWINDOW,
 
-		// Size and position
 		CW_USEDEFAULT, CW_USEDEFAULT, 1500, 800,
 
-		NULL,       // Parent window    
-		NULL,       // Menu
-		hInstance,  // Instance handle
-		NULL        // Additional application data
+		NULL,
+		NULL,
+		hInstance,
+		NULL
 	);
 
 	if (hwnd == NULL)
@@ -196,6 +181,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	}
 
 	appCondition = preparation;
+	runAppConditions = true;
+	runCheckTime = true;
 
 	InitializeCriticalSection(&criticalSection);
 
@@ -252,10 +239,24 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 		case inputWaiting:
 
-			appCondition = startTesting;
+			lowerCase = tolower(wParam);
+
+			if (lowerCase == '\r')
+			{
+				appCondition = restart;
+				break;
+			}
+
+			if (IsCharAlphaNumeric(lowerCase) || lowerCase == ' ' || lowerCase == '\b')
+			{
+				typing->SetTimeForTesting(currentTimeOption);
+				appCondition = startTesting;
+			}
+			else break;
+
 
 		case testing:
-			lowerCase = tolower((char)wParam);
+			lowerCase = tolower(wParam);
 
 			if (lowerCase == '\r')
 			{
@@ -322,6 +323,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 
 	case WM_DESTROY:
+		EnterCriticalSection(&criticalSection);
+		runAppConditions = false;
+		runCheckTime = false;
+		appCondition = final;
+		LeaveCriticalSection(&criticalSection);
 		PostQuitMessage(0);
 		DeleteCriticalSection(&criticalSection);
 		return 0;
